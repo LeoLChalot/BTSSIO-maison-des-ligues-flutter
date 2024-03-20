@@ -1,80 +1,97 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+import 'package:maison_des_ligues/providers/articles.dart';
+// import 'package:maison_des_ligues/screens/screen_articles.dart';
+import 'package:maison_des_ligues/services/service_articles.dart';
+import 'package:maison_des_ligues/services/service_authentication.dart';
 
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Connexion')),
-      body: Column(children: [
-        FormLogin(),
-        SizedBox(height: 16.0),
-        FloatingActionButton(
-            onPressed: () {
-              Navigator.of(context).pushNamed('/stockItems');
-            },
-            child: Text('login')),
-      ]),
-      resizeToAvoidBottomInset: false,
-    );
-  }
+  _LoginPageState createState() => _LoginPageState();
 }
 
-class FormLogin extends StatefulWidget {
-  const FormLogin({super.key});
-
-  @override
-  State<FormLogin> createState() => _FormLoginState();
-}
-
-class _FormLoginState extends State<FormLogin> {
+class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _loginController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    _loginController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Connexion'),
+      ),
+      body: Form(
+        key: _formKey,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            TextField(
-              decoration:
-                  const InputDecoration(labelText: 'Nom d\'utilisateur'),
+            TextFormField(
               controller: _loginController,
-            ),
-            const TextField(
-              decoration: InputDecoration(labelText: 'Mot de passe'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 16.0),
-            ElevatedButton(
-              child: const Text('Connexion'),
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _formKey.currentState?.save();
-                  final username = _loginController.text;
-                  final password = _passwordController.text;
-                  print(
-                      'Connexion de $username avec le mot de passe $password');
+              decoration: const InputDecoration(labelText: 'Login'),
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return 'Veuillez entrer votre login';
                 }
+                return null;
               },
-            )
+            ),
+            TextFormField(
+              controller: _passwordController,
+              decoration: const InputDecoration(labelText: 'Mot de passe'),
+              obscureText: true,
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return 'Veuillez entrer votre mot de passe';
+                }
+                return null;
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  (context) async {
+                    // Pass context
+                    try {
+                      if (_formKey.currentState!.validate()) {
+                        // Login logic using AuthService
+                        if (await AuthService.login(
+                            _loginController.text, _passwordController.text)) {
+                          // Login successful, fetch articles
+                          print('Login successful');
+                          final articles =
+                              await ArticleService.getAllArticles();
+                          // Update Articles provider using Provider.of
+                          Provider.of<Articles>(context, listen: false)
+                              .setArticles(articles);
+                          // Navigate to articles screen
+                          Navigator.pushReplacementNamed(context, '/articles');
+                        } else {
+                          // Login failed, show snackbar
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text('Login ou mot de passe incorrect')),
+                          );
+                        }
+                      }
+                    } catch (e) {
+                      print(e); // Handle errors
+                    }
+                  };
+                },
+                child: const Text('Se connecter'),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+void handleLogin(BuildContext context) async {
+  // ... your asynchronous logic here
 }
