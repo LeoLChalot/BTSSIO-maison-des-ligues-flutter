@@ -1,4 +1,0 @@
-#Wed Mar 20 19:24:44 CET 2024
-base.0=E\:\\LeoLChalot\\github\\distant\\BTSSIO-maison-des-ligues-flutter\\maison_des_ligues\\build\\app\\intermediates\\dex\\debug\\mergeDexDebug\\classes.dex
-path.0=classes.dex
-renamed.0=classes.dex
