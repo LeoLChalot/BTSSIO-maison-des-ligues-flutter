@@ -1,0 +1,1 @@
+ E:\\LeoLChalot\\github\\distant\\BTSSIO-maison-des-ligues-flutter\\maison_des_ligues\\.dart_tool\\flutter_build\\5fb5dbc85d53522abe006a45ab18146e\\native_assets.yaml: 
