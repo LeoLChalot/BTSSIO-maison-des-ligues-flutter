@@ -19,13 +19,13 @@ class Article {
 
   factory Article.fromData(dynamic data){
     return Article(
-      id: data["id_article"],
+      id: data["id"],
       nom: data["nom"],
-      photo: data["photo"],
+      photo: data["image"],
       description: data["description"],
       prix: data["prix"],
       quantite: data["quantite"],
-      categorieId: data["categorie_id"]
+      categorieId: data["categorie"]["id"]
     );
   }
 }

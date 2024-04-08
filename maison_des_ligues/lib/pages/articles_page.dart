@@ -1,4 +1,7 @@
+// ignore_for_file: unused_import
+
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:maison_des_ligues/models/article_model.dart';
 import 'package:maison_des_ligues/pages/form_ajout_page.dart';
 import 'package:maison_des_ligues/pages/form_edit_page.dart';
@@ -12,14 +15,13 @@ class ArticlesPage extends StatefulWidget {
 }
 
 class _ArticlesPageState extends State<ArticlesPage> {
-  late Future<List<dynamic>> _articles;
+  static final String _baseUrl = "${dotenv.env['BASE_URL']}";
+  late Future<List<Article>> _articles;
 
   @override
   void initState() {
     super.initState();
-    debugPrint("InitState() _articles");
     _articles = ArticleServices.getAllArticles();
-    debugPrint("Contenu de _articles : $_articles");
   }
 
   void _refreshArticles() async {
@@ -28,12 +30,26 @@ class _ArticlesPageState extends State<ArticlesPage> {
     });
   }
 
+  void _deleteArticle(String id) async {
+    await ArticleServices.deleteArticle(id)
+        ? debugPrint("Article Supprimé !")
+        : debugPrint("Erreur lors de la suppression!");
+    setState(() {
+      ArticleServices.deleteArticle(id);
+      _articles = ArticleServices.getAllArticles();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // Fonction déclancheur
     Future<void> showArticleDetails(Article article) async {
+      const articleDeleted = SnackBar(
+        content: Text('Article supprimé !'),
+      );
+      final id = article.id;
       final image =
-          "http://127.0.0.1:3000/${article.photo.toString().replaceAll("\\", "/")}";
+          "$_baseUrl/${article.photo.toString().replaceAll("\\", "/")}";
       final nom = article.nom;
       final description = article.description;
       final prix = article.prix.toString();
@@ -82,9 +98,15 @@ class _ArticlesPageState extends State<ArticlesPage> {
             actions: <Widget>[
               IconButton(
                   onPressed: () {
+                    _deleteArticle(id);
+                    // ScaffoldMessenger.of(context).showSnackBar(articleDeleted);
                     Navigator.of(context).pop();
                   },
-                  icon: const Icon(Icons.delete, size: 24, color: Colors.red,)),
+                  icon: const Icon(
+                    Icons.delete,
+                    size: 24,
+                    color: Colors.red,
+                  )),
               TextButton(
                 child: const Text('Retour'),
                 onPressed: () {
@@ -93,13 +115,13 @@ class _ArticlesPageState extends State<ArticlesPage> {
               ),
               TextButton(
                 child:
-                    const Text(style: TextStyle(color: Colors.red), 'Editer'),
+                    const Text(style: TextStyle(color: Colors.green), 'Editer'),
                 onPressed: () {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (BuildContext context) =>
-                          EditArticlePage(article)));
+                              EditArticlePage(article: article)));
                 },
               ),
             ],
@@ -112,19 +134,15 @@ class _ArticlesPageState extends State<ArticlesPage> {
         body: FutureBuilder<List>(
           future: _articles,
           builder: (context, snapshot) {
+            // debugPrint(snapshot.toString());
             if (snapshot.hasData) {
-              List<Article> articles = [];
-
-              for (var article in snapshot.data!) {
-                articles.add(Article.fromData(article));
-              }
-
+              debugPrint(snapshot.toString());
               return ListView.builder(
-                  itemCount: articles.length,
+                  itemCount: snapshot.data?.length,
                   itemBuilder: (context, index) {
-                    final article = articles[index];
+                    final article = snapshot.data?[index];
                     final image =
-                        "http://127.0.0.1:3000/${article.photo.toString().replaceAll("\\", "/")}";
+                        "$_baseUrl/${article.photo.toString().replaceAll("\\", "/")}";
                     final prix = article.prix.toString();
                     final nom = article.nom;
                     return ListTile(

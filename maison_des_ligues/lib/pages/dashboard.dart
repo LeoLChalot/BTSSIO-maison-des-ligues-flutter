@@ -15,7 +15,8 @@ class _DashboardState extends State<Dashboard> {
         body: const Center(child: Text("Home Page")),
         floatingActionButton: FloatingActionButton(
           onPressed: () => {
-            Navigator.of(context).pop()
+          Navigator.push(
+          context, MaterialPageRoute(builder: (context) => const LoginPage()))
           },
           child: const Icon(Icons.logout),
         ));

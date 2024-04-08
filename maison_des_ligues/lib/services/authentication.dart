@@ -1,36 +1,45 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:maison_des_ligues/models/user_model.dart';
 
 class Authentication {
-  static Future<bool> signin(String login, String password) async {
-    const String baseUrl = "http://127.0.0.1:3000/m2l";
-    // const String baseUrl = "http://192.168.56.1:3000/m2l";
+  static final String _baseUrl = "${dotenv.env['BASE_URL']}/m2l/user";
+
+  static Future<User> signin(String login, String password) async {
     try {
       debugPrint("In signin()");
-      // var url = Uri.http("127.0.0.1:3000", "m2l/boutique/articles");
 
       var headers = <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
+        'Content-Type': 'application/json',
       };
-
-
       var body = jsonEncode(
           <String, dynamic>{"login": login, "mot_de_passe": password});
-
-      final response = await http.post(Uri.parse("$baseUrl/user/connexion"),
+      final response = await http.post(Uri.parse("$_baseUrl/connexion"),
           headers: headers, body: body);
       debugPrint(response.statusCode.toString());
-      debugPrint(response.body);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        debugPrint(data["isAdmin"].toString());
-        return (data["isAdmin"].toString() == "1") ? true : false;
+      if (response.statusCode == 200 &&
+          await jsonDecode(response.body)["infos"]["utilisateur"]["isAdmin"] ==
+              true) {
+        debugPrint("RESPONSE 200 - OK");
+        final data = await jsonDecode(response.body);
+        var userData = {
+          "pseudo": data["infos"]["utilisateur"]["pseudo"],
+          "isAdmin": data["infos"]["utilisateur"]["isAdmin"],
+          "token": data["infos"]["utilisateur"]["jwt_token"]
+        };
+        final user = User.fromData(userData);
+        return user;
+      } else if (response.statusCode == 404) {
+        return User.fromData(
+            {"pseudo": "Unknown User", "isAdmin": false, "token": "No token"});
       } else {
-        return Future.error("Something went wrong");
+        throw Future.error("ERROR : Something went wrong");
       }
     } catch (error) {
-      return Future.error("ERROR : $error");
+      throw Future.error("ERROR : $error");
     }
   }
 }

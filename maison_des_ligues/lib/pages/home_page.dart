@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:flutter/material.dart';
 import 'package:maison_des_ligues/pages/dashboard.dart';
 import 'package:maison_des_ligues/pages/articles_page.dart';

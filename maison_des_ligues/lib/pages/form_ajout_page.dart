@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:flutter/cupertino.dart';
 import 'package:maison_des_ligues/models/article_model.dart';
 
