@@ -1,13 +1,11 @@
 import "dart:async";
 import 'dart:convert';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:maison_des_ligues/pages/home_page.dart';
 import 'package:maison_des_ligues/services/boutique_service.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../models/categorie_model.dart';
 
@@ -19,13 +17,16 @@ class AddForm extends StatefulWidget {
 }
 
 class _AddFormState extends State<AddForm> {
-  XFile? pickedFile;
+  static final String _baseUrl = "${dotenv.env['BASE_URL']}/m2l";
+  XFile? _image;
+
   late Object _newArticle;
   late Future<List<Categorie>> _categories;
   late String selectedCategorieType;
-  late Future<MultipartFile> _image;
 
-  final GlobalKey<FormState> addForm = GlobalKey<FormState>();
+  // late Future<MultipartFile> _image;
+
+  final GlobalKey<FormState> _addForm = GlobalKey<FormState>();
   final _nomController = TextEditingController();
   final _imageController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -117,7 +118,7 @@ class _AddFormState extends State<AddForm> {
     );
   }
 
-  _checkedPermission() async {
+/*  _checkedPermission() async {
     Map<Permission, PermissionStatus> statuses =
         await [Permission.camera, Permission.storage].request();
 
@@ -129,32 +130,36 @@ class _AddFormState extends State<AddForm> {
     }
 
     pickedImage();
-  }
+  }*/
 
   /// Get from gallery
   _getFromGallery(context) async {
+    debugPrint("in getFromGallery()");
     try {
-      XFile? pickedFile = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1800,
-        maxHeight: 1800,
-      );
+      final ImagePicker picker = ImagePicker();
+      final XFile? pickedFile =
+          await picker.pickImage(source: ImageSource.gallery);
       if (pickedFile != null) {
         setState(() {
-          _image =
-              MultipartFile.fromFile(pickedFile.path, filename: "image.jpg");
+          _image = pickedFile;
         });
+
+        debugPrint("_IMAGE => ${_image?.path}");
+      } else {
+        debugPrint("pickedFile == null !");
       }
     } catch (e) {
       debugPrint(e.toString());
     }
   }
 
-  pickedImage() async {
+/*  pickedImage() async {
+    debugPrint("in pickedImage()");
     final picker = ImagePicker();
     pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    debugPrint("FILE NAME AFTER PICKING => ${pickedFile?.name}");
     setState(() {});
-  }
+  }*/
 
   Future<void> onSubmit(BuildContext context) async {
     debugPrint("FT - onSubmit()");
@@ -166,28 +171,31 @@ class _AddFormState extends State<AddForm> {
       categorieControllerText = selectedCategorieType;
     });
 
+    debugPrint("UPLOAD IMAGE => ${_image.toString()}");
+
     final categorie = await _getCategorie(categorieControllerText);
 
     setState(() {
-      _newArticle = jsonEncode({
+      _newArticle = {
         "nom": nomControllerText,
         "description": descriptionControllerText,
         "prix": prixControllerText.toString(),
         "quantite": quantiteControllerText.toString(),
         "categorie_id": categorie.id
-      });
+      };
     });
 
-    if (await BoutiqueServices.addArticle(_image, _newArticle)) {
-      debugPrint("Article ajouté !");
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (BuildContext context) => const HomePage()));
-    } else {
-      showWarning();
-    }
+    await BoutiqueServices.addArticle(_image, _newArticle)
+        ? debugPrint("ENFIN")
+        : debugPrint("EH NON...");
   }
+
+/*  Future<dynamic> uploadToServer(
+    XFile? file,
+  ) async {
+    //implement your code using Rest API or other technology
+    debugPrint("In uploadToServer !");
+  }*/
 
   @override
   void initState() {
@@ -200,154 +208,162 @@ class _AddFormState extends State<AddForm> {
   @override
   Widget build(BuildContext context) {
     return Form(
-      key: addForm,
+      key: _addForm,
       child: Container(
         padding: const EdgeInsets.only(left: 50, right: 50),
         child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              // Text - Nom de l'article
-              Container(
-                margin: const EdgeInsets.only(bottom: 20),
-                child: TextFormField(
-                  controller: _nomController,
-                  decoration: const InputDecoration(
-                    label: Text("Nom"),
-                    border: OutlineInputBorder(),
-                    hintText: "Nom",
-                  ),
-                  validator: (value) {
-                    return (value == null || value.isEmpty)
-                        ? "Veuillez saisir le nom de l'article"
-                        : null;
-                  },
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // Text - Nom de l'article
+            Container(
+              margin: const EdgeInsets.only(bottom: 20),
+              child: TextFormField(
+                controller: _nomController,
+                decoration: const InputDecoration(
+                  label: Text("Nom"),
+                  border: OutlineInputBorder(),
+                  hintText: "Nom",
                 ),
+                validator: (value) {
+                  return (value == null || value.isEmpty)
+                      ? "Veuillez saisir le nom de l'article"
+                      : null;
+                },
               ),
+            ),
 
-              // FILE INPUT
-              ElevatedButton(
+            // FILE INPUT
+            ElevatedButton.icon(
+              onPressed: () async {
+                _getFromGallery(context);
+              },
+              label: const Text('Choose Image'),
+              icon: const Icon(Icons.image),
+            ),
+
+            /*ElevatedButton(
                 onPressed: () {
                   // _checkedPermission();
                   _getFromGallery(context);
                 },
                 child: const Text("Ajouter une image"),
-              ),
+              ),*/
 
-              // Text Area - Description de l'article
-              Container(
-                margin: const EdgeInsets.only(bottom: 20),
-                child: TextFormField(
-                  controller: _descriptionController,
-                  maxLines: 8,
-                  decoration: const InputDecoration(
-                    label: Text("Description"),
-                    border: OutlineInputBorder(),
-                    hintText: "Description",
-                  ),
-                  validator: (value) {
-                    return (value == null || value.isEmpty)
-                        ? "Veuillez saisir la description"
-                        : null;
-                  },
+            // Text Area - Description de l'article
+            Container(
+              margin: const EdgeInsets.only(bottom: 20),
+              child: TextFormField(
+                controller: _descriptionController,
+                maxLines: 8,
+                decoration: const InputDecoration(
+                  label: Text("Description"),
+                  border: OutlineInputBorder(),
+                  hintText: "Description",
                 ),
+                validator: (value) {
+                  return (value == null || value.isEmpty)
+                      ? "Veuillez saisir la description"
+                      : null;
+                },
               ),
+            ),
 
-              // Nombre (décimal) - Choix de la quantité
-              Container(
-                margin: const EdgeInsets.only(bottom: 20),
-                child: TextFormField(
-                  controller: _prixController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  maxLength: 5,
-                  decoration: const InputDecoration(
-                    label: Text("Prix"),
-                    border: OutlineInputBorder(),
-                    hintText: "Prix",
-                  ),
-                  validator: (value) {
-                    return (value == null || value.isEmpty)
-                        ? "Veuillez saisir lae prix"
-                        : null;
-                  },
+            // Nombre (décimal) - Choix de la quantité
+            Container(
+              margin: const EdgeInsets.only(bottom: 20),
+              child: TextFormField(
+                controller: _prixController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                maxLength: 5,
+                decoration: const InputDecoration(
+                  label: Text("Prix"),
+                  border: OutlineInputBorder(),
+                  hintText: "Prix",
                 ),
+                validator: (value) {
+                  return (value == null || value.isEmpty)
+                      ? "Veuillez saisir lae prix"
+                      : null;
+                },
               ),
+            ),
 
-              // Nombre (entier) - Choix de la quantité
-              Container(
-                margin: const EdgeInsets.only(bottom: 30),
-                child: TextFormField(
-                  controller: _quantiteController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: false),
-                  maxLength: 3,
-                  onChanged: (inputValue) {
-                    if (inputValue.isEmpty ||
-                        digitValidator.hasMatch(inputValue)) {
-                      setValidator(true);
-                    } else {
-                      setValidator(false);
-                    }
-                  },
-                  decoration: InputDecoration(
-                      label: const Text("Quantité"),
-                      border: const OutlineInputBorder(),
-                      hintText: "Quantité",
-                      errorText:
-                          isANumber ? null : "Veuillez saisir un chiffre"),
-                  validator: (value) {
-                    return (value == null || value.isEmpty)
-                        ? "Veuillez saisir la quantité"
-                        : null;
-                  },
-                ),
+            // Nombre (entier) - Choix de la quantité
+            Container(
+              margin: const EdgeInsets.only(bottom: 30),
+              child: TextFormField(
+                controller: _quantiteController,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: false),
+                maxLength: 3,
+                onChanged: (inputValue) {
+                  if (inputValue.isEmpty ||
+                      digitValidator.hasMatch(inputValue)) {
+                    setValidator(true);
+                  } else {
+                    setValidator(false);
+                  }
+                },
+                decoration: InputDecoration(
+                    label: const Text("Quantité"),
+                    border: const OutlineInputBorder(),
+                    hintText: "Quantité",
+                    errorText: isANumber ? null : "Veuillez saisir un chiffre"),
+                validator: (value) {
+                  return (value == null || value.isEmpty)
+                      ? "Veuillez saisir la quantité"
+                      : null;
+                },
               ),
+            ),
 
-              // DropDown - Choix de la catégorie
-              Container(
-                margin: const EdgeInsets.only(bottom: 15),
-                child: FutureBuilder<List<Categorie>>(
-                  future: _categories, // Access the Future
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      final categories = snapshot.data!;
-                      final displayedCategories = categories.take(10).toList();
-                      return DropdownButtonFormField<String?>(
-                        items: displayedCategories
-                            .map((categorie) => DropdownMenuItem(
-                                  value: categorie.id,
-                                  child: Text(categorie.nom),
-                                ))
-                            .toList(),
-                        decoration:
-                            const InputDecoration(border: OutlineInputBorder()),
-                        value: selectedCategorieType,
-                        onChanged: (value) async {
-                          selectedCategorieType = value!;
-                        },
-                      );
-                    } else if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}'); // Handle errors
-                    } else {
-                      return const CircularProgressIndicator(); // Show loading indicator
-                    }
-                  },
-                ),
+            // DropDown - Choix de la catégorie
+            Container(
+              margin: const EdgeInsets.only(bottom: 15),
+              child: FutureBuilder<List<Categorie>>(
+                future: _categories, // Access the Future
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final categories = snapshot.data!;
+                    final displayedCategories = categories.take(10).toList();
+                    return DropdownButtonFormField<String?>(
+                      items: displayedCategories
+                          .map((categorie) => DropdownMenuItem(
+                                value: categorie.id,
+                                child: Text(categorie.nom),
+                              ))
+                          .toList(),
+                      decoration:
+                          const InputDecoration(border: OutlineInputBorder()),
+                      value: selectedCategorieType,
+                      onChanged: (value) async {
+                        selectedCategorieType = value!;
+                      },
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}'); // Handle errors
+                  } else {
+                    return const CircularProgressIndicator(); // Show loading indicator
+                  }
+                },
               ),
+            ),
 
-              // Soumission
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (addForm.currentState!.validate()) {
-                      onSubmit(context);
-                    }
-                  },
-                  child: const Text("Valider les modifications"),
-                ),
+            // Soumission
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_addForm.currentState!.validate()) {
+                    onSubmit(context);
+                  }
+                },
+                child: const Text("Valider les modifications"),
               ),
-            ]),
+            ),
+          ],
+        ),
       ),
     );
   }

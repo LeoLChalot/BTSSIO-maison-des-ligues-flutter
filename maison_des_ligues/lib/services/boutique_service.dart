@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
 import 'package:maison_des_ligues/models/categorie_model.dart';
 
 import '../models/article_model.dart';
@@ -21,7 +20,7 @@ class BoutiqueServices {
     try {
       debugPrint("In getAllArticles() => $_baseUrl/boutique/articles/all");
       final response =
-      await http.get(Uri.parse("$_baseUrl/boutique/articles/all"));
+          await http.get(Uri.parse("$_baseUrl/boutique/articles/all"));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body)["infos"]["articles"] as List;
         // debugPrint(data.toString());
@@ -106,7 +105,7 @@ class BoutiqueServices {
     try {
       debugPrint("In getAllCategories() => $_baseUrl/boutique/categories/all");
       final response =
-      await http.get(Uri.parse("$_baseUrl/boutique/categories/all"));
+          await http.get(Uri.parse("$_baseUrl/boutique/categories/all"));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body)["infos"]["categories"] as List;
         return data
@@ -217,26 +216,39 @@ class BoutiqueServices {
   * @return - A boolean
   */
   static Future<bool> addArticle(file, article) async {
-    debugPrint("In updateArticle() => ${article["nom"]}");
-    try{
+    debugPrint("article structure: $article");
+    debugPrint("File structure: ${file.toString()}");
+    const storage = FlutterSecureStorage();
+    String? token = await storage.read(key: "access_token");
+    try {
       Dio dio = Dio();
 
-      if(article != null){
+      if (article != null) {
         FormData formData = FormData.fromMap({
           "nom": article["nom"],
           "photo": file,
           "description": article["description"],
-          "prix": double.parse(article["prix"]),
-          "quantite": int.parse(article["quantite"]),
+          "prix": article["prix"],
+          "quantite": article["quantite"],
           "categorie_id": article["categorie_id"]
         });
 
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              options.headers['Authorization'] = 'Bearer $token';
+              return handler.next(options);
+            },
+          ),
+        );
+        debugPrint("$_baseUrl/admin/article");
         Response response = await dio.post(
           "$_baseUrl/admin/article",
           data: formData,
         );
 
-        if(response.statusCode == 200){
+        debugPrint(response.toString());
+        if (response.statusCode == 200) {
           debugPrint("Form Upload successfully!");
           debugPrint(response.data);
           return true;
@@ -247,7 +259,7 @@ class BoutiqueServices {
       } else {
         return false;
       }
-    } catch (error){
+    } catch (error) {
       debugPrint("Something went wrong ! Error : $error");
       return false;
     }
