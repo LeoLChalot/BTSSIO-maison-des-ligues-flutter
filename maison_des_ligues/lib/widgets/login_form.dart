@@ -20,7 +20,7 @@ class _LoginFormState extends State<LoginForm> {
   String loginText = "";
   String passwordText = "";
 
-  Future<void> showWarning() {
+  Future<void> _showWarning() {
     return showDialog<String>(
       context: context,
       builder: (BuildContext context) => Dialog(
@@ -81,7 +81,7 @@ class _LoginFormState extends State<LoginForm> {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => const HomePage()));
     } else {
-      showWarning();
+      _showWarning();
     }
   }
 
@@ -139,7 +139,7 @@ class _LoginFormState extends State<LoginForm> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () async {
+                  onPressed: () {
                     if (login.currentState!.validate()) {
                       onSubmit(context);
                     }
@@ -147,45 +147,6 @@ class _LoginFormState extends State<LoginForm> {
                   child: const Text("Valider"),
                 ),
               ),
-              /*
-              Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: RichText(
-                          text: TextSpan(children: [
-                        const TextSpan(
-                            style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                color: Colors.black54),
-                            text: "Login : "),
-                        TextSpan(
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w900,
-                                color: Colors.grey),
-                            text: loginText),
-                      ])),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: RichText(
-                          text: TextSpan(children: [
-                        const TextSpan(
-                            style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                color: Colors.black54),
-                            text: "Password : "),
-                        TextSpan(
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w900,
-                                color: Colors.grey),
-                            text: passwordText),
-                      ])),
-                    ),
-                  ]),
-                  */
             ]),
       ),
     );

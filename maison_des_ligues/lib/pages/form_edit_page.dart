@@ -1,29 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:maison_des_ligues/models/article_model.dart';
+import 'package:maison_des_ligues/widgets/edit_form.dart';
 
 class EditArticlePage extends StatefulWidget {
-  const EditArticlePage({required Article article, super.key});
+  const EditArticlePage({required this.article, super.key});
 
+  final Article article;
 
   @override
   State<EditArticlePage> createState() => _EditArticlePageState();
 }
 
 class _EditArticlePageState extends State<EditArticlePage> {
-  @override
-  void initState() {
-    super.initState();
-    debugPrint("InitState() _article (Edit article page");
-    // debugPrint(widget.article["id"]);
-  }
+  late final Article _article = widget.article;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: const Text("Formulaire de modification")
-      ),
-      body: const Center(child: Text("Modif")),
-    );
+        appBar: AppBar(title: Text(
+          _article.nom
+        )),
+        body: UpdateForm(article: _article));
   }
 }

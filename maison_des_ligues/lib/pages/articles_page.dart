@@ -5,7 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:maison_des_ligues/models/article_model.dart';
 import 'package:maison_des_ligues/pages/form_ajout_page.dart';
 import 'package:maison_des_ligues/pages/form_edit_page.dart';
-import 'package:maison_des_ligues/services/article_service.dart';
+import 'package:maison_des_ligues/services/boutique_service.dart';
 
 class ArticlesPage extends StatefulWidget {
   const ArticlesPage({super.key});
@@ -21,22 +21,22 @@ class _ArticlesPageState extends State<ArticlesPage> {
   @override
   void initState() {
     super.initState();
-    _articles = ArticleServices.getAllArticles();
+    _articles = BoutiqueServices.getAllArticles();
   }
 
   void _refreshArticles() async {
     setState(() {
-      _articles = ArticleServices.getAllArticles();
+      _articles = BoutiqueServices.getAllArticles();
     });
   }
 
   void _deleteArticle(String id) async {
-    await ArticleServices.deleteArticle(id)
+    await BoutiqueServices.deleteArticle(id)
         ? debugPrint("Article Supprimé !")
         : debugPrint("Erreur lors de la suppression!");
     setState(() {
-      ArticleServices.deleteArticle(id);
-      _articles = ArticleServices.getAllArticles();
+      BoutiqueServices.deleteArticle(id);
+      _articles = BoutiqueServices.getAllArticles();
     });
   }
 
@@ -53,6 +53,7 @@ class _ArticlesPageState extends State<ArticlesPage> {
       final nom = article.nom;
       final description = article.description;
       final prix = article.prix.toString();
+      final quantite = article.quantite;
 
       return showDialog<void>(
         /*
@@ -86,27 +87,40 @@ class _ArticlesPageState extends State<ArticlesPage> {
                   ),
                   Container(
                     padding: const EdgeInsets.all(20),
-                    child: Text(
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                        "$prix €"),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            "$prix €"),
+                        Text(
+                            style: TextStyle(
+                              color: (quantite > 1) ? Colors.green : Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            (quantite > 1) ? "$quantite en stock" : "Rupture")
+                      ],
+                    ),
                   )
                 ],
               ),
             ),
             actions: <Widget>[
-              IconButton(
-                  onPressed: () {
-                    _deleteArticle(id);
-                    // ScaffoldMessenger.of(context).showSnackBar(articleDeleted);
-                    Navigator.of(context).pop();
-                  },
-                  icon: const Icon(
-                    Icons.delete,
-                    size: 24,
-                    color: Colors.red,
-                  )),
+              Container(
+                child: IconButton(
+                    onPressed: () {
+                      _deleteArticle(id);
+                      // ScaffoldMessenger.of(context).showSnackBar(articleDeleted);
+                      Navigator.of(context).pop();
+                    },
+                    icon: const Icon(
+                      Icons.delete,
+                      size: 24,
+                      color: Colors.red,
+                    )),
+              ),
               TextButton(
                 child: const Text('Retour'),
                 onPressed: () {
@@ -136,7 +150,6 @@ class _ArticlesPageState extends State<ArticlesPage> {
           builder: (context, snapshot) {
             // debugPrint(snapshot.toString());
             if (snapshot.hasData) {
-              debugPrint(snapshot.toString());
               return ListView.builder(
                   itemCount: snapshot.data?.length,
                   itemBuilder: (context, index) {

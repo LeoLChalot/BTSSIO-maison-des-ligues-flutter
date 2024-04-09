@@ -1,3 +1,5 @@
+import 'package:maison_des_ligues/models/categorie_model.dart';
+
 class Article {
   final String id;
   final String nom;
@@ -5,7 +7,7 @@ class Article {
   final String description;
   final double prix;
   final int quantite;
-  final String categorieId;
+  final Categorie categorie;
 
   Article({
     required this.id,
@@ -14,20 +16,17 @@ class Article {
     required this.description,
     required this.prix,
     required this.quantite,
-    required this.categorieId,
+    required this.categorie,
   });
 
-  factory Article.fromData(dynamic data){
+  factory Article.fromData(dynamic data) {
     return Article(
-      id: data["id"],
-      nom: data["nom"],
-      photo: data["image"],
-      description: data["description"],
-      prix: data["prix"],
-      quantite: data["quantite"],
-      categorieId: data["categorie"]["id"]
-    );
+        id: data["id"],
+        nom: data["nom"],
+        photo: data["image"],
+        description: data["description"],
+        prix: data["prix"],
+        quantite: data["quantite"],
+        categorie: Categorie.fromData(data["categorie"]));
   }
 }
-
-
