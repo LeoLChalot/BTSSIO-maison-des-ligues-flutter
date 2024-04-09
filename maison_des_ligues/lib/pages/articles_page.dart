@@ -18,6 +18,7 @@ class _ArticlesPageState extends State<ArticlesPage> {
   static final String _baseUrl = "${dotenv.env['BASE_URL']}";
   late Future<List<Article>> _articles;
 
+
   @override
   void initState() {
     super.initState();
@@ -44,16 +45,13 @@ class _ArticlesPageState extends State<ArticlesPage> {
   Widget build(BuildContext context) {
     // Fonction déclancheur
     Future<void> showArticleDetails(Article article) async {
-      const articleDeleted = SnackBar(
-        content: Text('Article supprimé !'),
-      );
       final id = article.id;
       final image =
-          "$_baseUrl/${article.photo.toString().replaceAll("\\", "/")}";
+          "$_baseUrl/${article.image.toString().replaceAll("\\", "/")}";
       final nom = article.nom;
       final description = article.description;
-      final prix = article.prix.toString();
-      final quantite = article.quantite;
+      final prix = article.prix;
+      final quantite = int.parse(article.quantite);
 
       return showDialog<void>(
         /*
@@ -94,7 +92,7 @@ class _ArticlesPageState extends State<ArticlesPage> {
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                             ),
-                            "$prix €"),
+                            "${prix.toString()} €"),
                         Text(
                             style: TextStyle(
                               color: (quantite > 1) ? Colors.green : Colors.red,
@@ -108,19 +106,16 @@ class _ArticlesPageState extends State<ArticlesPage> {
               ),
             ),
             actions: <Widget>[
-              Container(
-                child: IconButton(
-                    onPressed: () {
-                      _deleteArticle(id);
-                      // ScaffoldMessenger.of(context).showSnackBar(articleDeleted);
-                      Navigator.of(context).pop();
-                    },
-                    icon: const Icon(
-                      Icons.delete,
-                      size: 24,
-                      color: Colors.red,
-                    )),
-              ),
+              IconButton(
+                  onPressed: () {
+                    _deleteArticle(id);
+                    Navigator.of(context).pop();
+                  },
+                  icon: const Icon(
+                    Icons.delete,
+                    size: 24,
+                    color: Colors.red,
+                  )),
               TextButton(
                 child: const Text('Retour'),
                 onPressed: () {
@@ -148,20 +143,20 @@ class _ArticlesPageState extends State<ArticlesPage> {
         body: FutureBuilder<List>(
           future: _articles,
           builder: (context, snapshot) {
-            // debugPrint(snapshot.toString());
+            debugPrint("SCAFFOLD LISTVIEW => ${snapshot.toString()}");
             if (snapshot.hasData) {
               return ListView.builder(
                   itemCount: snapshot.data?.length,
                   itemBuilder: (context, index) {
                     final article = snapshot.data?[index];
                     final image =
-                        "$_baseUrl/${article.photo.toString().replaceAll("\\", "/")}";
-                    final prix = article.prix.toString();
+                        "$_baseUrl/${article.image.toString().replaceAll("\\", "/")}";
+                    final prix = article.prix;
                     final nom = article.nom;
                     return ListTile(
                       leading: Image.network(width: 50, height: 50, image),
                       title: Text(nom),
-                      subtitle: Text("$prix €"),
+                      subtitle: Text("${prix.toString()} €"),
                       trailing: IconButton(
                         icon: const Icon(Icons.info),
                         onPressed: () => showArticleDetails(article),
@@ -175,13 +170,13 @@ class _ArticlesPageState extends State<ArticlesPage> {
             }
           },
         ),
-        floatingActionButton: FloatingActionButton(
+        /*floatingActionButton: FloatingActionButton(
           onPressed: () => {
             debugPrint("Before refresh: $_articles"),
             _refreshArticles(),
             debugPrint("After refresh: $_articles"),
           },
           child: const Icon(Icons.refresh),
-        ));
+        )*/);
   }
 }

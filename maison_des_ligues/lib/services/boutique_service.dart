@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:maison_des_ligues/models/categorie_model.dart';
 
 import '../models/article_model.dart';
@@ -19,9 +21,10 @@ class BoutiqueServices {
     try {
       debugPrint("In getAllArticles() => $_baseUrl/boutique/articles/all");
       final response =
-          await http.get(Uri.parse("$_baseUrl/boutique/articles/all"));
+      await http.get(Uri.parse("$_baseUrl/boutique/articles/all"));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body)["infos"]["articles"] as List;
+        // debugPrint(data.toString());
         return data
             .map<Article>((article) => Article.fromData(article))
             .toList();
@@ -103,7 +106,7 @@ class BoutiqueServices {
     try {
       debugPrint("In getAllCategories() => $_baseUrl/boutique/categories/all");
       final response =
-          await http.get(Uri.parse("$_baseUrl/boutique/categories/all"));
+      await http.get(Uri.parse("$_baseUrl/boutique/categories/all"));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body)["infos"]["categories"] as List;
         return data
@@ -178,26 +181,75 @@ class BoutiqueServices {
       // Read value
       String? token = await storage.read(key: "access_token");
       debugPrint("Token récupéré !\nToken : $token");
-      debugPrint("In updateArticle()");
+      debugPrint("In updateArticle() => ${article.nom}");
+
       var headers = {
         "Content-Type": "application/json; charset=utf-8",
         "Authorization": "Bearer $token"
       };
       var body = json.encode({
-        "id_article": article.id,
+        "id": article.id,
         "nom": article.nom,
-        "photo": article.photo,
+        "photo": article.image,
         "description": article.description,
         "prix": article.prix,
         "quantite": article.quantite,
         "categorie_id": article.categorie.id
       });
 
-      final response = await http.delete(Uri.parse("$_baseUrl/admin/article/"),
+      debugPrint("${body.toString()}, $headers");
+
+      final response = await http.put(Uri.parse("$_baseUrl/admin/article/"),
           headers: headers, body: body);
+
+      debugPrint(response.statusCode.toString());
+
       return (response.statusCode == 200) ? true : false;
     } catch (error) {
       return Future.error(error);
+    }
+  }
+
+  /*
+  * Administrator use only, using the token provided in Headers
+  *
+  * Processes the data, and create the item
+  * @return - A boolean
+  */
+  static Future<bool> addArticle(file, article) async {
+    debugPrint("In updateArticle() => ${article["nom"]}");
+    try{
+      Dio dio = Dio();
+
+      if(article != null){
+        FormData formData = FormData.fromMap({
+          "nom": article["nom"],
+          "photo": file,
+          "description": article["description"],
+          "prix": double.parse(article["prix"]),
+          "quantite": int.parse(article["quantite"]),
+          "categorie_id": article["categorie_id"]
+        });
+
+        Response response = await dio.post(
+          "$_baseUrl/admin/article",
+          data: formData,
+        );
+
+        if(response.statusCode == 200){
+          debugPrint("Form Upload successfully!");
+          debugPrint(response.data);
+          return true;
+        } else {
+          debugPrint("Something went wrong ! Error : ${response.statusCode}");
+          return false;
+        }
+      } else {
+        return false;
+      }
+    } catch (error){
+      debugPrint("Something went wrong ! Error : $error");
+      return false;
     }
   }
 }

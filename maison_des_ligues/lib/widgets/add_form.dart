@@ -1,29 +1,31 @@
 import "dart:async";
+import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:maison_des_ligues/pages/home_page.dart';
 import 'package:maison_des_ligues/services/boutique_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-import '../models/article_model.dart';
 import '../models/categorie_model.dart';
 
-class UpdateForm extends StatefulWidget {
-  const UpdateForm({required this.article, super.key});
-
-  final Article article;
+class AddForm extends StatefulWidget {
+  const AddForm({super.key});
 
   @override
-  State<UpdateForm> createState() => _UpdateFormState();
+  State<AddForm> createState() => _AddFormState();
 }
 
-class _UpdateFormState extends State<UpdateForm> {
-  late Article _article = widget.article;
-  late Article _updatedArticle;
+class _AddFormState extends State<AddForm> {
+  XFile? pickedFile;
+  late Object _newArticle;
   late Future<List<Categorie>> _categories;
   late String selectedCategorieType;
+  late Future<MultipartFile> _image;
 
-  final GlobalKey<FormState> updateForm = GlobalKey<FormState>();
+  final GlobalKey<FormState> addForm = GlobalKey<FormState>();
   final _nomController = TextEditingController();
   final _imageController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -60,7 +62,7 @@ class _UpdateFormState extends State<UpdateForm> {
 
   Future<Categorie> _getCategorie(String id) async {
     debugPrint("FT - _getCategorie($id)");
-      return BoutiqueServices.getCategorieById(id);
+    return BoutiqueServices.getCategorieById(id);
   }
 
   void setValidator(valid) {
@@ -90,11 +92,12 @@ class _UpdateFormState extends State<UpdateForm> {
                 padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
                 child: const Column(
                   children: [
-                    Text("Erreur lors de la modification !",
+                    Text("Erreur lors de l'ajout !",
                         style: TextStyle(
                             fontSize: 24, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center),
-                    Text("Une erreur est survenue !",
+                    Text(
+                        "Nous avons rencontré un problème lors de l'ajout de l'article !",
                         style: TextStyle(fontSize: 22),
                         textAlign: TextAlign.center),
                   ],
@@ -114,6 +117,45 @@ class _UpdateFormState extends State<UpdateForm> {
     );
   }
 
+  _checkedPermission() async {
+    Map<Permission, PermissionStatus> statuses =
+        await [Permission.camera, Permission.storage].request();
+
+    debugPrint("Ask for permission");
+
+    if (statuses[Permission.camera] != PermissionStatus.granted ||
+        statuses[Permission.storage] != PermissionStatus.granted) {
+      return;
+    }
+
+    pickedImage();
+  }
+
+  /// Get from gallery
+  _getFromGallery(context) async {
+    try {
+      XFile? pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1800,
+        maxHeight: 1800,
+      );
+      if (pickedFile != null) {
+        setState(() {
+          _image =
+              MultipartFile.fromFile(pickedFile.path, filename: "image.jpg");
+        });
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
+  pickedImage() async {
+    final picker = ImagePicker();
+    pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    setState(() {});
+  }
+
   Future<void> onSubmit(BuildContext context) async {
     debugPrint("FT - onSubmit()");
     setState(() {
@@ -127,23 +169,21 @@ class _UpdateFormState extends State<UpdateForm> {
     final categorie = await _getCategorie(categorieControllerText);
 
     setState(() {
-      _updatedArticle = Article(
-          id: _article.id,
-          nom: nomControllerText,
-          image: _article.image,
-          description: descriptionControllerText,
-          prix: prixControllerText.toString(),
-          quantite: quantiteControllerText.toString(),
-          categorie: categorie
-      );
+      _newArticle = jsonEncode({
+        "nom": nomControllerText,
+        "description": descriptionControllerText,
+        "prix": prixControllerText.toString(),
+        "quantite": quantiteControllerText.toString(),
+        "categorie_id": categorie.id
+      });
     });
 
-    if (await BoutiqueServices.updateArticle(_updatedArticle)) {
-      debugPrint("Article mis à jour !");
+    if (await BoutiqueServices.addArticle(_image, _newArticle)) {
+      debugPrint("Article ajouté !");
       Navigator.push(
           context,
-          MaterialPageRoute(builder: (BuildContext context) =>
-                  const HomePage()));
+          MaterialPageRoute(
+              builder: (BuildContext context) => const HomePage()));
     } else {
       showWarning();
     }
@@ -153,21 +193,14 @@ class _UpdateFormState extends State<UpdateForm> {
   void initState() {
     super.initState();
     debugPrint("InitState() _article (Edit article page)");
-    _article = widget.article;
-    debugPrint(
-        "initState() => INFORMATION DE L'ARTICLE ==> ${_article.toString()}");
     _fetchCategories();
-    _nomController.text = _article.nom;
-    _descriptionController.text = _article.description;
-    _prixController.text = _article.prix.toString();
-    _quantiteController.text = _article.quantite.toString();
-    selectedCategorieType = _article.categorie.id;
+    selectedCategorieType = "413875cb-cbc1-4971-8c72-e2e7e86219bf";
   }
 
   @override
   Widget build(BuildContext context) {
     return Form(
-      key: updateForm,
+      key: addForm,
       child: Container(
         padding: const EdgeInsets.only(left: 50, right: 50),
         child: Column(
@@ -191,8 +224,14 @@ class _UpdateFormState extends State<UpdateForm> {
                 ),
               ),
 
-              // FUTURE FILE INPUT
-              Container(),
+              // FILE INPUT
+              ElevatedButton(
+                onPressed: () {
+                  // _checkedPermission();
+                  _getFromGallery(context);
+                },
+                child: const Text("Ajouter une image"),
+              ),
 
               // Text Area - Description de l'article
               Container(
@@ -301,7 +340,7 @@ class _UpdateFormState extends State<UpdateForm> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    if (updateForm.currentState!.validate()) {
+                    if (addForm.currentState!.validate()) {
                       onSubmit(context);
                     }
                   },

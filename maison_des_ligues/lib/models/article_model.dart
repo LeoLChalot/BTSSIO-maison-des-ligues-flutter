@@ -3,16 +3,16 @@ import 'package:maison_des_ligues/models/categorie_model.dart';
 class Article {
   final String id;
   final String nom;
-  final String photo;
+  final String image;
   final String description;
-  final double prix;
-  final int quantite;
+  final String prix;
+  final String quantite;
   final Categorie categorie;
 
   Article({
     required this.id,
     required this.nom,
-    required this.photo,
+    required this.image,
     required this.description,
     required this.prix,
     required this.quantite,
@@ -23,10 +23,10 @@ class Article {
     return Article(
         id: data["id"],
         nom: data["nom"],
-        photo: data["image"],
+        image: data["image"],
         description: data["description"],
-        prix: data["prix"],
-        quantite: data["quantite"],
+        prix: data["prix"].toString(),
+        quantite: data["quantite"].toString(),
         categorie: Categorie.fromData(data["categorie"]));
   }
 }
