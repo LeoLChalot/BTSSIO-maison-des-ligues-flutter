@@ -3,7 +3,6 @@ import "dart:async";
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:maison_des_ligues/pages/home_page.dart';
 import 'package:maison_des_ligues/services/boutique_service.dart';
 
 import '../models/categorie_model.dart';
@@ -130,6 +129,7 @@ class _AddFormState extends State<AddForm> {
         });
 
         debugPrint("_IMAGE => ${_image?.path}");
+        Navigator.of(context).pop();
       } else {
         debugPrint("pickedFile == null !");
       }
@@ -161,12 +161,35 @@ class _AddFormState extends State<AddForm> {
       };
     });
 
-    await BoutiqueServices.createArticle(_image, _newArticle)
-        ? Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (BuildContext context) => HomePage()))
-        : debugPrint("EH NON...");
+    if (await BoutiqueServices.createArticle(_image, _newArticle)) {
+      setState(() {
+        _nomController.text = "";
+        _imageController.text = "";
+        _descriptionController.text = "";
+        _prixController.text = "";
+        _quantiteController.text = "";
+        _categorieController.text = "";
+        _image = null;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Article ajouté !'),
+          action: SnackBarAction(
+            label: 'Impec !',
+            onPressed: () {},
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Oops, il y a eu une erreur... !'),
+        action: SnackBarAction(
+          label: 'Retenter...',
+          onPressed: () {},
+        ),
+      ));
+    }
   }
 
   @override
@@ -338,11 +361,14 @@ class _AddFormState extends State<AddForm> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // FILE INPUT
+
                 ElevatedButton.icon(
                   onPressed: () async {
                     showPictureChoices(context);
                   },
-                  label: const Text('Choose Image'),
+                  label: (_image?.name != null)
+                      ? Text("${_image?.name.substring(0, 5)}...")
+                      : const Text("Upload"),
                   icon: const Icon(Icons.photo_camera),
                 ),
                 FloatingActionButton(

@@ -132,6 +132,7 @@ class _UpdateFormState extends State<UpdateForm> {
         });
 
         debugPrint("_IMAGE => ${_image?.path}");
+        Navigator.of(context).pop();
       } else {
         debugPrint("pickedFile == null !");
       }
@@ -168,8 +169,10 @@ class _UpdateFormState extends State<UpdateForm> {
 
     if (await BoutiqueServices.updateArticle(_image, _updatedArticle)) {
       debugPrint("Article mis à jour !");
-      Navigator.push(context,
-          MaterialPageRoute(builder: (BuildContext context) => HomePage()));
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) => const HomePage()));
     } else {
       showWarning();
     }
@@ -195,7 +198,7 @@ class _UpdateFormState extends State<UpdateForm> {
         ? debugPrint("Article Supprimé !")
         : debugPrint("Erreur lors de la suppression!");
     Navigator.push(context,
-        MaterialPageRoute(builder: (BuildContext context) => HomePage()));
+        MaterialPageRoute(builder: (BuildContext context) => const HomePage()));
   }
 
   @override
@@ -382,19 +385,21 @@ class _UpdateFormState extends State<UpdateForm> {
                 ],
               ),
               Container(
-                margin: EdgeInsets.only(bottom: 50),
+                margin: const EdgeInsets.only(bottom: 50),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                      onPressed: () {
-                        _deleteArticle(_article.id);
-                        Navigator.of(context).pop();
-                      },
-                      icon: const Icon(
-                        Icons.delete,
-                        size: 24,
-                        color: Colors.red,
-                      ), label: const Text("Supprimer"),),
+                    onPressed: () {
+                      _deleteArticle(_article.id);
+                      Navigator.of(context).pop();
+                    },
+                    icon: const Icon(
+                      Icons.delete,
+                      size: 24,
+                      color: Colors.red,
+                    ),
+                    label: const Text("Supprimer"),
+                  ),
                 ),
               )
             ]),

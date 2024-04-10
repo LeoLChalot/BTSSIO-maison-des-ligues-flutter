@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -175,9 +174,6 @@ class BoutiqueServices {
   * @return - A boolean
   */
   static Future<bool> updateArticle(XFile? image, article) async {
-
-    // debugPrint("XFile? image : ${image?.path}\n ${article.toString()}");
-
     try {
       const storage = FlutterSecureStorage();
       String? token = await storage.read(key: "access_token");
@@ -187,7 +183,6 @@ class BoutiqueServices {
         'PUT',
         url,
       );
-
       if (image != null) {
         List<int> imageBytes = await image.readAsBytes();
         final imagePart = http.MultipartFile.fromBytes(
@@ -196,7 +191,6 @@ class BoutiqueServices {
           filename: 'product_image.jpg', // Nom du fichier à envoyer
         );
         imageUploadRequest.files.add(imagePart);
-
         debugPrint("IMAGE PART => ${imagePart.toString()}");
       }
 
@@ -224,7 +218,8 @@ class BoutiqueServices {
         return true;
       } else {
         // Gérer les erreurs de requête
-        debugPrint('Erreur lors de la modification du produit: ${response.reasonPhrase}');
+        debugPrint(
+            'Erreur lors de la modification du produit: ${response.reasonPhrase}');
         return false;
       }
     } catch (error) {
@@ -240,80 +235,32 @@ class BoutiqueServices {
   * Processes the data, and create the item
   * @return - A boolean
   */
-  static Future<bool> addArticle(file, article) async {
-    debugPrint("article structure: $article");
-    debugPrint("File structure: ${file.toString()}");
-    const storage = FlutterSecureStorage();
-    String? token = await storage.read(key: "access_token");
-    try {
-      Dio dio = Dio();
-
-      if (article != null) {
-        FormData formData = FormData.fromMap({
-          "nom": article["nom"],
-          "photo": file,
-          "description": article["description"],
-          "prix": article["prix"],
-          "quantite": article["quantite"],
-          "categorie_id": article["categorie_id"]
-        });
-
-        dio.interceptors.add(
-          InterceptorsWrapper(
-            onRequest: (options, handler) {
-              options.headers['Authorization'] = 'Bearer $token';
-              return handler.next(options);
-            },
-          ),
-        );
-        debugPrint("$_baseUrl/admin/article");
-        Response response = await dio.post(
-          "$_baseUrl/admin/article",
-          data: formData,
-        );
-
-        debugPrint(response.toString());
-        if (response.statusCode == 200) {
-          debugPrint("Form Upload successfully!");
-          debugPrint(response.data);
-          return true;
-        } else {
-          debugPrint("Something went wrong ! Error : ${response.statusCode}");
-          return false;
-        }
-      } else {
-        return false;
-      }
-    } catch (error) {
-      debugPrint("Something went wrong ! Error : $error");
-      return false;
-    }
-  }
-
-  static Future<bool> createArticle(file, article) async {
+  static Future<bool> createArticle(XFile? image, article) async {
     try {
       const storage = FlutterSecureStorage();
       String? token = await storage.read(key: "access_token");
       final url = Uri.parse("$_baseUrl/admin/article");
-
-      List<int> imageBytes = await file!.readAsBytes();
 
       final imageUploadRequest = http.MultipartRequest(
         'POST',
         url,
       );
 
-      final imagePart = http.MultipartFile.fromBytes(
-        'photo',
-        imageBytes,
-        filename: 'product_image.jpg', // Nom du fichier à envoyer
-      );
+      if (image != null) {
+        List<int> imageBytes = await image.readAsBytes();
+        final imagePart = http.MultipartFile.fromBytes(
+          'photo',
+          imageBytes,
+          filename: 'product_image.jpg', // Nom du fichier à envoyer
+        );
+        imageUploadRequest.files.add(imagePart);
+        debugPrint("IMAGE PART => ${imagePart.toString()}");
+      }
 
       // Set headers:
       imageUploadRequest.headers['Content-Type'] =
           'multipart/form-data'; // Required for multipart requests
       imageUploadRequest.headers['Authorization'] = 'Bearer $token';
-      imageUploadRequest.files.add(imagePart);
       // Ajouter les autres données du produit au multipart request
       imageUploadRequest.fields['nom'] = article["nom"];
       imageUploadRequest.fields['description'] = article["description"];
