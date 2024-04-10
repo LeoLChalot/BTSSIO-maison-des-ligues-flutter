@@ -3,6 +3,7 @@ import "dart:async";
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:maison_des_ligues/pages/home_page.dart';
 import 'package:maison_des_ligues/services/boutique_service.dart';
 
 import '../models/categorie_model.dart';
@@ -16,13 +17,10 @@ class AddForm extends StatefulWidget {
 
 class _AddFormState extends State<AddForm> {
   XFile? _image;
-  String? _imagePath;
 
   late Object _newArticle;
   late Future<List<Categorie>> _categories;
   late String selectedCategorieType;
-
-  // late Future<MultipartFile> _image;
 
   final GlobalKey<FormState> _addForm = GlobalKey<FormState>();
   final _nomController = TextEditingController();
@@ -129,7 +127,6 @@ class _AddFormState extends State<AddForm> {
       if (pickedFile != null) {
         setState(() {
           _image = XFile(pickedFile.path);
-          _imagePath = pickedFile.path;
         });
 
         debugPrint("_IMAGE => ${_image?.path}");
@@ -152,7 +149,6 @@ class _AddFormState extends State<AddForm> {
     });
 
     debugPrint("UPLOAD IMAGE => ${_image.toString()}");
-
     final categorie = await _getCategorie(categorieControllerText);
 
     setState(() {
@@ -166,7 +162,10 @@ class _AddFormState extends State<AddForm> {
     });
 
     await BoutiqueServices.createArticle(_image, _newArticle)
-        ? debugPrint("ENFIN")
+        ? Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (BuildContext context) => HomePage()))
         : debugPrint("EH NON...");
   }
 
@@ -188,20 +187,22 @@ class _AddFormState extends State<AddForm> {
           builder: (BuildContext context) {
             return AlertDialog(
                 title: const Text(textAlign: TextAlign.center, "Source ?"),
-                content: Container(
-                                    width: 100,
+                content: SizedBox(
+                    width: 100,
                     height: 100,
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                  ElevatedButton(
-                      onPressed: () => _getFromGallery(context, "camera"),
-                      child: const Icon(Icons.camera_alt)),
-                  ElevatedButton(
-                      onPressed: () => _getFromGallery(context, "gallery"),
-                      child: const Icon(Icons.image)),
-                ])));
+                          ElevatedButton(
+                              onPressed: () =>
+                                  _getFromGallery(context, "camera"),
+                              child: const Icon(Icons.camera_alt)),
+                          ElevatedButton(
+                              onPressed: () =>
+                                  _getFromGallery(context, "gallery"),
+                              child: const Icon(Icons.image)),
+                        ])));
           });
     }
 
@@ -333,10 +334,9 @@ class _AddFormState extends State<AddForm> {
 
             // Soumission
             Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-
                 // FILE INPUT
                 ElevatedButton.icon(
                   onPressed: () async {
@@ -344,14 +344,16 @@ class _AddFormState extends State<AddForm> {
                   },
                   label: const Text('Choose Image'),
                   icon: const Icon(Icons.photo_camera),
-                ),FloatingActionButton(
+                ),
+                FloatingActionButton(
                   onPressed: () {
                     if (_addForm.currentState!.validate()) {
                       onSubmit(context);
                     }
                   },
                   child: const Icon(Icons.add_sharp),
-                ),],
+                ),
+              ],
             ),
           ],
         ),

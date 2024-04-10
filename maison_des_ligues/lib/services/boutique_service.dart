@@ -176,7 +176,7 @@ class BoutiqueServices {
   */
   static Future<bool> updateArticle(XFile? image, article) async {
 
-    debugPrint("XFile? image : ${image?.path}\n ${article.toString()}");
+    // debugPrint("XFile? image : ${image?.path}\n ${article.toString()}");
 
     try {
       const storage = FlutterSecureStorage();

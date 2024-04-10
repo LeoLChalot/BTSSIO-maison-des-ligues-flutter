@@ -168,10 +168,8 @@ class _UpdateFormState extends State<UpdateForm> {
 
     if (await BoutiqueServices.updateArticle(_image, _updatedArticle)) {
       debugPrint("Article mis à jour !");
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (BuildContext context) => const HomePage()));
+      Navigator.push(context,
+          MaterialPageRoute(builder: (BuildContext context) => HomePage()));
     } else {
       showWarning();
     }
@@ -192,34 +190,54 @@ class _UpdateFormState extends State<UpdateForm> {
     selectedCategorieType = _article.categorie.id;
   }
 
+  void _deleteArticle(String id) async {
+    await BoutiqueServices.deleteArticle(id)
+        ? debugPrint("Article Supprimé !")
+        : debugPrint("Erreur lors de la suppression!");
+    Navigator.push(context,
+        MaterialPageRoute(builder: (BuildContext context) => HomePage()));
+  }
+
   @override
   Widget build(BuildContext context) {
     Future<void> showPictureChoices(context) async {
       return showDialog<void>(
           context: context,
-          barrierDismissible: false, // user must tap button!
+          barrierDismissible: true, // user must tap button!
           builder: (BuildContext context) {
             return AlertDialog(
                 title: const Text(textAlign: TextAlign.center, "Source ?"),
-                content: Center(
-                    child: Row(children: [
-                  ElevatedButton(
-                      onPressed: () => _getFromGallery(context, "camera"),
-                      child: const Icon(Icons.camera_alt)),
-                  ElevatedButton(
-                      onPressed: () => _getFromGallery(context, "gallery"),
-                      child: const Icon(Icons.browse_gallery)),
-                ])));
+                content: SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                              onPressed: () =>
+                                  _getFromGallery(context, "camera"),
+                              child: const Icon(Icons.camera_alt)),
+                          ElevatedButton(
+                              onPressed: () =>
+                                  _getFromGallery(context, "gallery"),
+                              child: const Icon(Icons.image)),
+                        ])));
           });
     }
 
-    return Form(
+    return SingleChildScrollView(
+        // padding: EdgeInsets.all(20.0),
+        child: Form(
       key: updateForm,
       child: Container(
         padding: const EdgeInsets.only(left: 50, right: 50),
         child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
+              const SizedBox(
+                height: 30,
+              ),
               // Text - Nom de l'article
               Container(
                 margin: const EdgeInsets.only(bottom: 20),
@@ -238,21 +256,12 @@ class _UpdateFormState extends State<UpdateForm> {
                 ),
               ),
 
-              // FUTURE FILE INPUT
-              ElevatedButton.icon(
-                onPressed: () async {
-                  showPictureChoices(context);
-                },
-                label: const Text('Choose Image'),
-                icon: const Icon(Icons.image),
-              ),
-
               // Text Area - Description de l'article
               Container(
                 margin: const EdgeInsets.only(bottom: 20),
                 child: TextFormField(
                   controller: _descriptionController,
-                  maxLines: 8,
+                  maxLines: 5,
                   decoration: const InputDecoration(
                     label: Text("Description"),
                     border: OutlineInputBorder(),
@@ -350,19 +359,46 @@ class _UpdateFormState extends State<UpdateForm> {
               ),
 
               // Soumission
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (updateForm.currentState!.validate()) {
-                      onSubmit(context);
-                    }
-                  },
-                  child: const Text("Valider les modifications"),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // FILE INPUT
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      showPictureChoices(context);
+                    },
+                    label: const Text('Choose Image'),
+                    icon: const Icon(Icons.upload),
+                  ),
+                  FloatingActionButton(
+                    onPressed: () {
+                      if (updateForm.currentState!.validate()) {
+                        onSubmit(context);
+                      }
+                    },
+                    child: const Icon(Icons.add_sharp),
+                  ),
+                ],
               ),
+              Container(
+                margin: EdgeInsets.only(bottom: 50),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                      onPressed: () {
+                        _deleteArticle(_article.id);
+                        Navigator.of(context).pop();
+                      },
+                      icon: const Icon(
+                        Icons.delete,
+                        size: 24,
+                        color: Colors.red,
+                      ), label: const Text("Supprimer"),),
+                ),
+              )
             ]),
       ),
-    );
+    ));
   }
 }

@@ -1,9 +1,7 @@
-// ignore_for_file: unused_import
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:maison_des_ligues/models/article_model.dart';
-import 'package:maison_des_ligues/pages/form_ajout_page.dart';
+import 'package:maison_des_ligues/pages/detail_page.dart';
 import 'package:maison_des_ligues/pages/form_edit_page.dart';
 import 'package:maison_des_ligues/services/boutique_service.dart';
 
@@ -17,7 +15,6 @@ class ArticlesPage extends StatefulWidget {
 class _ArticlesPageState extends State<ArticlesPage> {
   static final String _baseUrl = "${dotenv.env['BASE_URL']}";
   late Future<List<Article>> _articles;
-
 
   @override
   void initState() {
@@ -47,7 +44,7 @@ class _ArticlesPageState extends State<ArticlesPage> {
     Future<void> showArticleDetails(Article article) async {
       final id = article.id;
       final image =
-          "$_baseUrl/${article.image.toString().replaceAll("\\", "/")}";
+          "$_baseUrl/${article.image.toString()}";
       final nom = article.nom;
       final description = article.description;
       final prix = article.prix;
@@ -140,43 +137,48 @@ class _ArticlesPageState extends State<ArticlesPage> {
     }
 
     return Scaffold(
-        body: FutureBuilder<List>(
-          future: _articles,
-          builder: (context, snapshot) {
-            debugPrint("SCAFFOLD LISTVIEW => ${snapshot.toString()}");
-            if (snapshot.hasData) {
-              return ListView.builder(
-                  itemCount: snapshot.data?.length,
-                  itemBuilder: (context, index) {
-                    final article = snapshot.data?[index];
-                    final image =
-                        "$_baseUrl/${article.image.toString().replaceAll("\\", "/")}";
-                    final prix = article.prix;
-                    final nom = article.nom;
-                    return ListTile(
+      body: FutureBuilder<List>(
+        future: _articles,
+        builder: (context, snapshot) {
+          debugPrint("SCAFFOLD LISTVIEW => ${snapshot.toString()}");
+          if (snapshot.hasData) {
+            return ListView.builder(
+                itemCount: snapshot.data?.length,
+                itemBuilder: (context, index) {
+                  final article = snapshot.data?[index];
+                  final image =
+                      "$_baseUrl/${article.image.toString().replaceAll("\\", "/")}";
+                  final prix = article.prix;
+                  final nom = article.nom;
+                  return ListTile(
                       leading: Image.network(width: 50, height: 50, image),
                       title: Text(nom),
                       subtitle: Text("${prix.toString()} €"),
                       trailing: IconButton(
                         icon: const Icon(Icons.info),
-                        onPressed: () => showArticleDetails(article),
-                      ),
-                    );
-                  });
-            } else {
-              return const Center(
-                child: Text("Pas de données"),
-              );
-            }
-          },
-        ),
-        /*floatingActionButton: FloatingActionButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (BuildContext context) =>
+                                  DetailPage(article: article)),
+                        ),
+                      ));
+                });
+          } else {
+            return const Center(
+              child: Text("Pas de données"),
+            );
+          }
+        },
+      ),
+      /*floatingActionButton: FloatingActionButton(
           onPressed: () => {
             debugPrint("Before refresh: $_articles"),
             _refreshArticles(),
             debugPrint("After refresh: $_articles"),
           },
           child: const Icon(Icons.refresh),
-        )*/);
+        )*/
+    );
   }
 }

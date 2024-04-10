@@ -23,7 +23,7 @@ class Article {
     return Article(
         id: data["id"],
         nom: data["nom"],
-        image: data["image"],
+        image: data["image"].toString().replaceAll("\\", "/"),
         description: data["description"],
         prix: data["prix"].toString(),
         quantite: data["quantite"].toString(),
