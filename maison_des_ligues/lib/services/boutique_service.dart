@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:maison_des_ligues/models/categorie_model.dart';
 
 import '../models/article_model.dart';
@@ -173,39 +174,63 @@ class BoutiqueServices {
   * Processes the data, and update the item targeted by the given [body.id]
   * @return - A boolean
   */
-  static Future<bool> updateArticle(Article article) async {
+  static Future<bool> updateArticle(XFile? image, article) async {
+
+    debugPrint("XFile? image : ${image?.path}\n ${article.toString()}");
+
     try {
-      // Create storage
       const storage = FlutterSecureStorage();
-      // Read value
       String? token = await storage.read(key: "access_token");
-      debugPrint("Token récupéré !\nToken : $token");
-      debugPrint("In updateArticle() => ${article.nom}");
+      final url = Uri.parse("$_baseUrl/admin/article/");
 
-      var headers = {
-        "Content-Type": "application/json; charset=utf-8",
-        "Authorization": "Bearer $token"
-      };
-      var body = json.encode({
-        "id": article.id,
-        "nom": article.nom,
-        "photo": article.image,
-        "description": article.description,
-        "prix": article.prix,
-        "quantite": article.quantite,
-        "categorie_id": article.categorie.id
-      });
+      final imageUploadRequest = http.MultipartRequest(
+        'PUT',
+        url,
+      );
 
-      debugPrint("${body.toString()}, $headers");
+      if (image != null) {
+        List<int> imageBytes = await image.readAsBytes();
+        final imagePart = http.MultipartFile.fromBytes(
+          'photo',
+          imageBytes,
+          filename: 'product_image.jpg', // Nom du fichier à envoyer
+        );
+        imageUploadRequest.files.add(imagePart);
 
-      final response = await http.put(Uri.parse("$_baseUrl/admin/article/"),
-          headers: headers, body: body);
+        debugPrint("IMAGE PART => ${imagePart.toString()}");
+      }
 
-      debugPrint(response.statusCode.toString());
+      // Set headers:
+      imageUploadRequest.headers['Content-Type'] =
+          'multipart/form-data'; // Required for multipart requests
+      imageUploadRequest.headers['Authorization'] = 'Bearer $token';
+      // Ajouter les autres données du produit au multipart request
+      imageUploadRequest.fields['id'] = article["id"];
+      imageUploadRequest.fields['nom'] = article["nom"];
+      imageUploadRequest.fields['description'] = article["description"];
+      imageUploadRequest.fields['prix'] = article["prix"];
+      imageUploadRequest.fields['quantite'] = article["quantite"];
+      imageUploadRequest.fields['categorie_id'] = article["categorie_id"];
 
-      return (response.statusCode == 200) ? true : false;
+      // Envoyer la requête multipart
+      final streamedResponse = await imageUploadRequest.send();
+
+      // Attendre la réponse
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        // Gérer la réponse réussie
+        debugPrint('Produit mis à jour avec succès.');
+        return true;
+      } else {
+        // Gérer les erreurs de requête
+        debugPrint('Erreur lors de la modification du produit: ${response.reasonPhrase}');
+        return false;
+      }
     } catch (error) {
-      return Future.error(error);
+      // Gérer les erreurs
+      debugPrint('Erreur lors de la modification du produit: $error');
+      return false;
     }
   }
 
@@ -261,6 +286,59 @@ class BoutiqueServices {
       }
     } catch (error) {
       debugPrint("Something went wrong ! Error : $error");
+      return false;
+    }
+  }
+
+  static Future<bool> createArticle(file, article) async {
+    try {
+      const storage = FlutterSecureStorage();
+      String? token = await storage.read(key: "access_token");
+      final url = Uri.parse("$_baseUrl/admin/article");
+
+      List<int> imageBytes = await file!.readAsBytes();
+
+      final imageUploadRequest = http.MultipartRequest(
+        'POST',
+        url,
+      );
+
+      final imagePart = http.MultipartFile.fromBytes(
+        'photo',
+        imageBytes,
+        filename: 'product_image.jpg', // Nom du fichier à envoyer
+      );
+
+      // Set headers:
+      imageUploadRequest.headers['Content-Type'] =
+          'multipart/form-data'; // Required for multipart requests
+      imageUploadRequest.headers['Authorization'] = 'Bearer $token';
+      imageUploadRequest.files.add(imagePart);
+      // Ajouter les autres données du produit au multipart request
+      imageUploadRequest.fields['nom'] = article["nom"];
+      imageUploadRequest.fields['description'] = article["description"];
+      imageUploadRequest.fields['prix'] = article["prix"];
+      imageUploadRequest.fields['quantite'] = article["quantite"];
+      imageUploadRequest.fields['categorie_id'] = article["categorie_id"];
+
+      // Envoyer la requête multipart
+      final streamedResponse = await imageUploadRequest.send();
+
+      // Attendre la réponse
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        // Gérer la réponse réussie
+        print('Produit ajouté avec succès.');
+        return true;
+      } else {
+        // Gérer les erreurs de requête
+        print('Erreur lors de l\'ajout du produit: ${response.reasonPhrase}');
+        return false;
+      }
+    } catch (error) {
+      // Gérer les erreurs
+      print('Erreur lors de l\'ajout du produit: $error');
       return false;
     }
   }

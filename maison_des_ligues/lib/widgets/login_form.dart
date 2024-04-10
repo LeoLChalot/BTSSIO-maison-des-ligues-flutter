@@ -66,11 +66,13 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   Future<void> onSubmit(BuildContext context) async {
+    debugPrint("onSubmit()");
     setState(() {
       loginText = loginController.text;
       passwordText = passwordController.text;
     });
     final User user = await Authentication.signin(loginText, passwordText);
+    debugPrint(user.toString());
 
     if (user.isAdmin == true) {
       // Create storage

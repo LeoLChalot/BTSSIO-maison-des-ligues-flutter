@@ -2,6 +2,7 @@ import "dart:async";
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:maison_des_ligues/pages/home_page.dart';
 import 'package:maison_des_ligues/services/boutique_service.dart';
 
@@ -18,8 +19,9 @@ class UpdateForm extends StatefulWidget {
 }
 
 class _UpdateFormState extends State<UpdateForm> {
+  XFile? _image;
   late Article _article = widget.article;
-  late Article _updatedArticle;
+  late Object _updatedArticle;
   late Future<List<Categorie>> _categories;
   late String selectedCategorieType;
 
@@ -60,7 +62,7 @@ class _UpdateFormState extends State<UpdateForm> {
 
   Future<Categorie> _getCategorie(String id) async {
     debugPrint("FT - _getCategorie($id)");
-      return BoutiqueServices.getCategorieById(id);
+    return BoutiqueServices.getCategorieById(id);
   }
 
   void setValidator(valid) {
@@ -114,6 +116,30 @@ class _UpdateFormState extends State<UpdateForm> {
     );
   }
 
+  /// Get from gallery
+  Future<void> _getFromGallery(context, choice) async {
+    debugPrint("in getFromGallery()");
+    try {
+      final ImagePicker picker = ImagePicker();
+
+      final XFile? pickedFile = choice == "camera"
+          ? await picker.pickImage(source: ImageSource.camera)
+          : await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        setState(() {
+          _image = XFile(pickedFile.path);
+        });
+
+        debugPrint("_IMAGE => ${_image?.path}");
+      } else {
+        debugPrint("pickedFile == null !");
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
   Future<void> onSubmit(BuildContext context) async {
     debugPrint("FT - onSubmit()");
     setState(() {
@@ -124,26 +150,28 @@ class _UpdateFormState extends State<UpdateForm> {
       categorieControllerText = selectedCategorieType;
     });
 
+    debugPrint("UPLOAD IMAGE => ${_image.toString()}");
     final categorie = await _getCategorie(categorieControllerText);
 
     setState(() {
-      _updatedArticle = Article(
-          id: _article.id,
-          nom: nomControllerText,
-          image: _article.image,
-          description: descriptionControllerText,
-          prix: prixControllerText.toString(),
-          quantite: quantiteControllerText.toString(),
-          categorie: categorie
-      );
+      _updatedArticle = {
+        "id": _article.id,
+        "nom": nomControllerText,
+        "description": descriptionControllerText,
+        "prix": prixControllerText.toString(),
+        "quantite": quantiteControllerText.toString(),
+        "categorie_id": categorie.id
+      };
     });
 
-    if (await BoutiqueServices.updateArticle(_updatedArticle)) {
+    debugPrint(_image.toString());
+
+    if (await BoutiqueServices.updateArticle(_image, _updatedArticle)) {
       debugPrint("Article mis à jour !");
       Navigator.push(
           context,
-          MaterialPageRoute(builder: (BuildContext context) =>
-                  const HomePage()));
+          MaterialPageRoute(
+              builder: (BuildContext context) => const HomePage()));
     } else {
       showWarning();
     }
@@ -166,6 +194,25 @@ class _UpdateFormState extends State<UpdateForm> {
 
   @override
   Widget build(BuildContext context) {
+    Future<void> showPictureChoices(context) async {
+      return showDialog<void>(
+          context: context,
+          barrierDismissible: false, // user must tap button!
+          builder: (BuildContext context) {
+            return AlertDialog(
+                title: const Text(textAlign: TextAlign.center, "Source ?"),
+                content: Center(
+                    child: Row(children: [
+                  ElevatedButton(
+                      onPressed: () => _getFromGallery(context, "camera"),
+                      child: const Icon(Icons.camera_alt)),
+                  ElevatedButton(
+                      onPressed: () => _getFromGallery(context, "gallery"),
+                      child: const Icon(Icons.browse_gallery)),
+                ])));
+          });
+    }
+
     return Form(
       key: updateForm,
       child: Container(
@@ -192,7 +239,13 @@ class _UpdateFormState extends State<UpdateForm> {
               ),
 
               // FUTURE FILE INPUT
-              Container(),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  showPictureChoices(context);
+                },
+                label: const Text('Choose Image'),
+                icon: const Icon(Icons.image),
+              ),
 
               // Text Area - Description de l'article
               Container(

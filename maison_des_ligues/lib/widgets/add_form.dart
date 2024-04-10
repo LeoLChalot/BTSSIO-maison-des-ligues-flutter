@@ -1,8 +1,6 @@
 import "dart:async";
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:maison_des_ligues/services/boutique_service.dart';
@@ -17,8 +15,8 @@ class AddForm extends StatefulWidget {
 }
 
 class _AddFormState extends State<AddForm> {
-  static final String _baseUrl = "${dotenv.env['BASE_URL']}/m2l";
   XFile? _image;
+  String? _imagePath;
 
   late Object _newArticle;
   late Future<List<Categorie>> _categories;
@@ -118,30 +116,20 @@ class _AddFormState extends State<AddForm> {
     );
   }
 
-/*  _checkedPermission() async {
-    Map<Permission, PermissionStatus> statuses =
-        await [Permission.camera, Permission.storage].request();
-
-    debugPrint("Ask for permission");
-
-    if (statuses[Permission.camera] != PermissionStatus.granted ||
-        statuses[Permission.storage] != PermissionStatus.granted) {
-      return;
-    }
-
-    pickedImage();
-  }*/
-
   /// Get from gallery
-  _getFromGallery(context) async {
+  Future<void> _getFromGallery(context, choice) async {
     debugPrint("in getFromGallery()");
     try {
       final ImagePicker picker = ImagePicker();
-      final XFile? pickedFile =
-          await picker.pickImage(source: ImageSource.gallery);
+
+      final XFile? pickedFile = choice == "camera"
+          ? await picker.pickImage(source: ImageSource.camera)
+          : await picker.pickImage(source: ImageSource.gallery);
+
       if (pickedFile != null) {
         setState(() {
-          _image = pickedFile;
+          _image = XFile(pickedFile.path);
+          _imagePath = pickedFile.path;
         });
 
         debugPrint("_IMAGE => ${_image?.path}");
@@ -152,14 +140,6 @@ class _AddFormState extends State<AddForm> {
       debugPrint(e.toString());
     }
   }
-
-/*  pickedImage() async {
-    debugPrint("in pickedImage()");
-    final picker = ImagePicker();
-    pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    debugPrint("FILE NAME AFTER PICKING => ${pickedFile?.name}");
-    setState(() {});
-  }*/
 
   Future<void> onSubmit(BuildContext context) async {
     debugPrint("FT - onSubmit()");
@@ -185,17 +165,10 @@ class _AddFormState extends State<AddForm> {
       };
     });
 
-    await BoutiqueServices.addArticle(_image, _newArticle)
+    await BoutiqueServices.createArticle(_image, _newArticle)
         ? debugPrint("ENFIN")
         : debugPrint("EH NON...");
   }
-
-/*  Future<dynamic> uploadToServer(
-    XFile? file,
-  ) async {
-    //implement your code using Rest API or other technology
-    debugPrint("In uploadToServer !");
-  }*/
 
   @override
   void initState() {
@@ -207,6 +180,31 @@ class _AddFormState extends State<AddForm> {
 
   @override
   Widget build(BuildContext context) {
+    // Fonction déclancheur
+    Future<void> showPictureChoices(context) async {
+      return showDialog<void>(
+          context: context,
+          barrierDismissible: true, // user must tap button!
+          builder: (BuildContext context) {
+            return AlertDialog(
+                title: const Text(textAlign: TextAlign.center, "Source ?"),
+                content: Container(
+                                    width: 100,
+                    height: 100,
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                  ElevatedButton(
+                      onPressed: () => _getFromGallery(context, "camera"),
+                      child: const Icon(Icons.camera_alt)),
+                  ElevatedButton(
+                      onPressed: () => _getFromGallery(context, "gallery"),
+                      child: const Icon(Icons.image)),
+                ])));
+          });
+    }
+
     return Form(
       key: _addForm,
       child: Container(
@@ -232,29 +230,12 @@ class _AddFormState extends State<AddForm> {
               ),
             ),
 
-            // FILE INPUT
-            ElevatedButton.icon(
-              onPressed: () async {
-                _getFromGallery(context);
-              },
-              label: const Text('Choose Image'),
-              icon: const Icon(Icons.image),
-            ),
-
-            /*ElevatedButton(
-                onPressed: () {
-                  // _checkedPermission();
-                  _getFromGallery(context);
-                },
-                child: const Text("Ajouter une image"),
-              ),*/
-
             // Text Area - Description de l'article
             Container(
               margin: const EdgeInsets.only(bottom: 20),
               child: TextFormField(
                 controller: _descriptionController,
-                maxLines: 8,
+                maxLines: 4,
                 decoration: const InputDecoration(
                   label: Text("Description"),
                   border: OutlineInputBorder(),
@@ -351,16 +332,26 @@ class _AddFormState extends State<AddForm> {
             ),
 
             // Soumission
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_addForm.currentState!.validate()) {
-                    onSubmit(context);
-                  }
-                },
-                child: const Text("Valider les modifications"),
-              ),
+            Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+
+                // FILE INPUT
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    showPictureChoices(context);
+                  },
+                  label: const Text('Choose Image'),
+                  icon: const Icon(Icons.photo_camera),
+                ),FloatingActionButton(
+                  onPressed: () {
+                    if (_addForm.currentState!.validate()) {
+                      onSubmit(context);
+                    }
+                  },
+                  child: const Icon(Icons.add_sharp),
+                ),],
             ),
           ],
         ),
