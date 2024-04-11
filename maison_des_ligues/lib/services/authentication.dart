@@ -15,6 +15,7 @@ class Authentication {
       debugPrint("$_baseUrl/connexion");
 
       var headers = <String, String>{
+        "Accept": "*/*",
         'Content-Type': 'application/json',
       };
       var body = jsonEncode(
@@ -27,22 +28,28 @@ class Authentication {
       debugPrint("$response");
       debugPrint(response.statusCode.toString());
 
-      if (response.statusCode == 200 &&
-          await jsonDecode(response.body)["infos"]["utilisateur"]["isAdmin"] ==
-              true) {
+      if (response.statusCode == 200) {
         debugPrint("RESPONSE 200 - OK");
         final data = await jsonDecode(response.body);
-        var userData = {
-          "pseudo": data["infos"]["utilisateur"]["pseudo"],
-          "isAdmin": data["infos"]["utilisateur"]["isAdmin"],
-          "token": data["infos"]["utilisateur"]["jwt_token"]
-        };
-        debugPrint("$userData");
-        final user = User.fromData(userData);
-        return user;
+        debugPrint(
+            "${data["infos"]["utilisateur"]["pseudo"]}\n${data["infos"]["utilisateur"]["isAdmin"]}\n${data["infos"]["utilisateur"]["jwt_token"]}");
+        if (data["infos"]["utilisateur"]["isAdmin"] == true) {
+          var userData = {
+            "pseudo": data["infos"]["utilisateur"]["pseudo"],
+            "isAdmin": 1,
+            "token": data["infos"]["utilisateur"]["jwt_token"]
+          };
+          debugPrint("$userData");
+          final user = User.fromData(userData);
+
+          debugPrint(user.toString());
+          return user;
+        } else {
+          return User.fromData(
+              {"pseudo": data["infos"]["utilisateur"]["pseudo"], "isAdmin": 0});
+        }
       } else if (response.statusCode == 404) {
-        return User.fromData(
-            {"pseudo": "Unknown User", "isAdmin": false, "token": "No token"});
+        return User.fromData({"pseudo": "Unknown", "isAdmin": 0});
       } else {
         throw Future.error("ERROR : Something went wrong");
       }

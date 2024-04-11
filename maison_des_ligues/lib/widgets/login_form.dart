@@ -4,8 +4,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:maison_des_ligues/pages/home_page.dart';
 import 'package:maison_des_ligues/services/authentication.dart';
 
-import '../models/user_model.dart';
-
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
 
@@ -14,6 +12,7 @@ class LoginForm extends StatefulWidget {
 }
 
 class _LoginFormState extends State<LoginForm> {
+  // late final Future<User> _user;
   final GlobalKey<FormState> login = GlobalKey<FormState>();
   final loginController = TextEditingController();
   final passwordController = TextEditingController();
@@ -71,14 +70,14 @@ class _LoginFormState extends State<LoginForm> {
       loginText = loginController.text;
       passwordText = passwordController.text;
     });
-    final User user = await Authentication.signin(loginText, passwordText);
-    debugPrint(user.toString());
-
+    final user = await Authentication.signin(loginText, passwordText);
+    debugPrint("USER.ISADMIN => ${user.isAdmin.toString()}");
     if (user.isAdmin == true) {
       // Create storage
       const storage = FlutterSecureStorage();
       // Write value
       await storage.write(key: "access_token", value: user.token);
+      await storage.write(key: "pseudo", value: user.pseudo);
       debugPrint("Token sauvegardé !");
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => const HomePage()));
@@ -146,7 +145,7 @@ class _LoginFormState extends State<LoginForm> {
                       onSubmit(context);
                     }
                   },
-                  child: const Text("Valider"),
+                  child: const Text("Connexion"),
                 ),
               ),
             ]),

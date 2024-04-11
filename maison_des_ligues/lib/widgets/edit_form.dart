@@ -167,14 +167,34 @@ class _UpdateFormState extends State<UpdateForm> {
 
     debugPrint(_image.toString());
 
-    if (await BoutiqueServices.updateArticle(_image, _updatedArticle)) {
-      debugPrint("Article mis à jour !");
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (BuildContext context) => const HomePage()));
+    if (await BoutiqueServices.createArticle(_image, _updatedArticle)) {
+      setState(() {
+        _nomController.text = "";
+        _imageController.text = "";
+        _descriptionController.text = "";
+        _prixController.text = "";
+        _quantiteController.text = "";
+        _categorieController.text = "";
+        _image = null;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Article mis à jour !'),
+          action: SnackBarAction(
+            label: 'Impec !',
+            onPressed: () {},
+          ),
+        ),
+      );
     } else {
-      showWarning();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Oops, il y a eu une erreur... !'),
+        action: SnackBarAction(
+          label: 'Retenter...',
+          onPressed: () {},
+        ),
+      ));
     }
   }
 

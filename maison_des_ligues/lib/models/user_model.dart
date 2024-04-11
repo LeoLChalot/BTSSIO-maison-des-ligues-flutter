@@ -23,12 +23,11 @@ class User {
   factory User.fromData(dynamic data) {
     return User(
       pseudo: data['pseudo'],
-      isAdmin: data['isAdmin'],
+      isAdmin: data['isAdmin'] == 1 ? true : false,
       id: data['id'] ?? '',
       prenom: data['prenom'] ?? '',
       nom: data['nom'] ?? '',
       email: data['email'] ?? '',
-      registrationDate: data['registrationDate'] ?? '',
       token: data['token'] ?? '',
     );
   }
