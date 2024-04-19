@@ -1,6 +1,5 @@
 import 'dart:core';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -17,6 +16,8 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage> {
   late final Future<List<User>> _listeUtilisateurs;
+  final List<bool> _adminStates = [];
+  bool light1 = true;
 
   Future<void> _fetchUsers() async {
     debugPrint("_fetchUsers()");
@@ -112,6 +113,21 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
+  Future<void> _togglePrivilege(String id) async {
+    await UserService.togglePrivilege(id);
+    setState(() {});
+  }
+
+  final MaterialStateProperty<Icon?> thumbIcon =
+      MaterialStateProperty.resolveWith<Icon?>(
+    (Set<MaterialState> states) {
+      if (states.contains(MaterialState.selected)) {
+        return const Icon(Icons.verified_user_outlined);
+      }
+      return const Icon(Icons.account_circle);
+    },
+  );
+
   @override
   void initState() {
     // TODO: implement initState
@@ -138,39 +154,63 @@ class _AdminPageState extends State<AdminPage> {
         ),
         body: FutureBuilder<List>(
           future: _listeUtilisateurs,
-
           // Your async function that returns Future<YourData>
           builder: (context, snapshot) {
-            debugPrint(
-                "_LISTEUTILISATEURS => ${_listeUtilisateurs.toString()}");
-            debugPrint("SNAPSHOT => ${snapshot.toString()}");
+            // debugPrint("_LISTEUTILISATEURS => ${_listeUtilisateurs.toString()}");
+            // debugPrint("SNAPSHOT => ${snapshot.toString()}");
             if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-              debugPrint(snapshot.hasData.toString());
+              // Handle unexpected data length (optional):
+              snapshot.data!.sort((user1, user2) {
+                if (user1.isAdmin == user2.isAdmin) {
+                  return user1.nom.compareTo(
+                      user2.nom); // Sort by name if isAdmin is the same
+                } else {
+                  return user1.isAdmin ? -1 : 1; // Place admins first
+                }
+              });
+              // debugPrint(snapshot.hasData.toString());
               return ListView.builder(
-                  itemCount: snapshot.data?.length,
+                  itemCount: snapshot.data!.length,
                   itemBuilder: (context, index) {
-                    debugPrint(snapshot.data?[index].toString());
-                    final user = snapshot.data?[index];
-                    final id = user.id;
+                    // debugPrint(snapshot.data![index].toString());
+                    final user = snapshot.data![index];
+                    final id = user.id.toString();
                     final nom = user.nom;
                     final prenom = user.prenom;
                     final pseudo = user.pseudo;
                     final email = user.email;
                     final registrationDate = formatDate(user.registrationDate);
+                    final bool isAdmin = user.isAdmin;
+                    _adminStates.add(isAdmin);
 
-                    return Card(
-                      child: ListTile(
-                        onLongPress: () {
-                          debugPrint("You long press me !");
-                          _dialogBuilder(context, user);
-                        },
-                        leading: const Icon(Icons.account_circle),
-                        title: Text("$prenom $nom"),
-                        subtitle: Text(
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                            '$registrationDate'),
-                        trailing: const Icon(Icons.touch_app),
-                      ),
+                    return Column(
+                      children: [
+                        Card(
+                            child: ColoredBox(
+                          color: Colors.green,
+                          child: Material(
+                            child: SwitchListTile(
+                              tileColor: Colors.white,
+                              title: Text("$pseudo"),
+                              subtitle: Text("Depuis : $registrationDate"),
+                              value: _adminStates[index],
+                              secondary: (_adminStates[index])
+                                  ? const Icon(Icons.verified_user_outlined)
+                                  : const Icon(Icons.account_circle),
+                              thumbIcon: thumbIcon,
+                              onChanged: (bool value) {
+                                debugPrint(
+                                    "Value of adminStates[index] : ${_adminStates[index].toString()}");
+                                _togglePrivilege(id);
+                                setState(() {
+                                  _adminStates[index] =
+                                      value; // Update state in setState
+                                });
+                              },
+                            ),
+                          ),
+                        )),
+                      ],
                     );
                   });
               // Use the data to build your widget

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/user_model.dart';
@@ -113,6 +112,34 @@ class UserService {
     } catch (error) {
       // Gérer les erreurs
       debugPrint('Erreur lors de la modification du produit: $error');
+      return false;
+    }
+  }
+
+  static Future<bool> togglePrivilege(String id) async {
+    try {
+      final url = "$_baseUrl/admin/user/role/$id";
+      const storage = FlutterSecureStorage();
+      String? token = await storage.read(key: "access_token");
+
+      final headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      };
+      final response = await http.put(Uri.parse(url), headers: headers);
+      if (response.statusCode == 200) {
+        // Gérer la réponse réussie
+        debugPrint('Rôle mis à jour avec succès.');
+        return true;
+      } else {
+        // Gérer les erreurs de requête
+        debugPrint(
+            'Erreur lors de la modification du rôle de l\'utilisateur: ${response.reasonPhrase}');
+        return false;
+      }
+    } catch (error) {
+      // Gérer les erreurs
+      debugPrint('Erreur lors de la mise à jour du rôle: $error');
       return false;
     }
   }
