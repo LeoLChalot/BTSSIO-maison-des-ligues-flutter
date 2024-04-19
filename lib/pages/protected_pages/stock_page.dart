@@ -34,7 +34,7 @@ class _StockPageState extends State<StockPage> {
     setState(() {
       _isLoading = true; // Hide loading indicator after data is fetched
     });
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1));
     _listeArticles = BoutiqueServices.getArticleByCategory(_categorieId);
     setState(() {
       _isLoading = false; // Hide loading indicator after data is fetched
