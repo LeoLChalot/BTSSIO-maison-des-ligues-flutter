@@ -217,9 +217,11 @@ class _HomePageState extends State<HomePage> {
                                           "nom": nom
                                         },
                                         // This is how you give transitions.
-                                        transition: Transition.fadeIn,
+                                        transition:
+                                            Transition.rightToLeftWithFade,
                                         // This is how you can set the duration for navigating the screen.
-                                        duration: const Duration(seconds: 1),
+                                        duration:
+                                            const Duration(milliseconds: 500),
                                       );
                                     },
                                     title: Text(
