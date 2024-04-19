@@ -364,10 +364,9 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
                             builder: (context, snapshot) {
                               if (snapshot.hasData) {
                                 final categories = snapshot.data!;
-                                final displayedCategories =
-                                    categories.take(10).toList();
+
                                 return DropdownButtonFormField<String?>(
-                                  items: displayedCategories
+                                  items: categories
                                       .map((categorie) => DropdownMenuItem(
                                             value: categorie.id,
                                             child: Text(categorie.nom),
@@ -376,6 +375,7 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
                                   decoration: const InputDecoration(
                                       label: Text("Catégorie"),
                                       border: OutlineInputBorder()),
+                                  borderRadius: BorderRadius.circular(10),
                                   value: selectedCategorieType,
                                   onChanged: (value) async {
                                     selectedCategorieType = value!;

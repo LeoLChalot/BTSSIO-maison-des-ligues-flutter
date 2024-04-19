@@ -1,3 +1,4 @@
+import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -138,13 +139,55 @@ class _StockPageState extends State<StockPage> {
                               children: [
                                 // A SlidableAction can have an icon and/or a label.
                                 SlidableAction(
-                                  onPressed: (context) => {
-                                    _deleteArticle(id),
-                                    debugPrint("SlidableAction"),
-                                    tri
-                                        ? _fetchArticlesByCategorie(
-                                            _categorieId)
-                                        : _fetchArticles()
+                                  onPressed: (context) async {
+                                    if (await confirm(
+                                      context,
+                                      title: const Text(
+                                          textAlign: TextAlign.center,
+                                          'Attention',
+                                          style: TextStyle(
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold)),
+                                      content: RichText(
+                                        textAlign: TextAlign.center,
+                                        text: TextSpan(
+                                          text:
+                                              "Vous vous apprêtez à supprimer définitivement :\n",
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              color: Colors.black54),
+                                          children: <TextSpan>[
+                                            TextSpan(
+                                                text: '\n$nom\n',
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                            const TextSpan(
+                                                text:
+                                                    '\nCette action est irréversible !',
+                                                style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                          ],
+                                        ),
+                                      ),
+                                      /*Text(
+                                          "Vous vous apprêtez à supprimer définitivement :\n$nom\nCette action est irréversible !"),*/
+                                      textOK: const Text('Confirmer',
+                                          style: TextStyle(
+                                              color: Colors.red,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold)),
+                                      textCancel: const Text('Annuler'),
+                                    )) {
+                                      _deleteArticle(id);
+                                      debugPrint("SlidableAction");
+                                      tri
+                                          ? _fetchArticlesByCategorie(
+                                              _categorieId)
+                                          : _fetchArticles();
+                                    }
                                   },
                                   backgroundColor: const Color(0xFFFE4A49),
                                   foregroundColor: Colors.white,
