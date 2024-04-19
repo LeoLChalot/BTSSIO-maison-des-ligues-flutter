@@ -130,13 +130,13 @@ class _LoginPageState extends State<LoginPage> {
                   child: TextFormField(
                     controller: loginController,
                     decoration: const InputDecoration(
-                      label: Text("Login"),
+                      label: Text("Pseudo"),
                       border: OutlineInputBorder(),
-                      hintText: "Login",
+                      hintText: "Pseudo",
                     ),
                     validator: (value) {
                       return (value == null || value.isEmpty)
-                          ? "Veuillez saisir votre login"
+                          ? "Veuillez saisir votre Pseudo"
                           : null;
                     },
                   ),

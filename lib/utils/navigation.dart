@@ -4,6 +4,7 @@ import 'package:maison_des_ligues_drawer/models/article_model.dart';
 import 'package:maison_des_ligues_drawer/pages/login_page.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/admin_page.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/ajout_article_page.dart';
+import 'package:maison_des_ligues_drawer/pages/protected_pages/boutique_overview_page.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/edition_article_page.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/home_page.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/stock_page.dart';
@@ -19,6 +20,7 @@ abstract class Routes {
   static const ajoutArticlePage = '/ajoutarticlepage';
   static const ajoutCategoriePage = '/ajoutcategoriepage';
   static const ajoutAdminPage = '/ajoutadminpage';
+  static const boutiqueOverview = '/boutiqueoverview';
 }
 
 final appPages = [
@@ -50,6 +52,10 @@ final appPages = [
   GetPage(
       name: Routes.ajoutAdminPage,
       page: () => const AjoutArticlePage(),
+      middlewares: [ProtectedRoutes()]),
+  GetPage(
+      name: Routes.boutiqueOverview,
+      page: () => const BoutiqueOverviewPage(),
       middlewares: [ProtectedRoutes()]),
 ];
 
