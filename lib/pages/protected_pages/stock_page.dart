@@ -119,7 +119,6 @@ class _StockPageState extends State<StockPage> {
                     return ListView.builder(
                         itemCount: snapshot.data?.length,
                         itemBuilder: (context, index) {
-                          debugPrint(snapshot.data?[index].id.toString());
                           final article = snapshot.data?[index];
                           final image = "$_baseUrl/${article.image}";
                           double.parse(article.prix);
