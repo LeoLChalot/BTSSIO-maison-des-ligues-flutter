@@ -1,5 +1,6 @@
 import 'dart:core';
 
+import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -198,14 +199,22 @@ class _AdminPageState extends State<AdminPage> {
                                   ? const Icon(Icons.verified_user_outlined)
                                   : const Icon(Icons.account_circle),
                               thumbIcon: thumbIcon,
-                              onChanged: (bool value) {
-                                debugPrint(
-                                    "Value of adminStates[index] : ${_adminStates[index].toString()}");
-                                _togglePrivilege(id);
-                                setState(() {
-                                  _adminStates[index] =
-                                      value; // Update state in setState
-                                });
+                              onChanged: (bool value) async {
+                                if (await confirm(
+                                  context,
+                                  title: const Text('Confirmation !'),
+                                  content: Text(value
+                                      ? "Confirmer l'accès au status \"Admin\"?"
+                                      : "Confirmer la perte du status \"Admin\"?"),
+                                  textOK: const Text('Oui'),
+                                  textCancel: const Text('Non'),
+                                )) {
+                                  _togglePrivilege(id);
+                                  setState(() {
+                                    _adminStates[index] =
+                                        value; // Update state in setState
+                                  });
+                                }
                               },
                             ),
                           ),
