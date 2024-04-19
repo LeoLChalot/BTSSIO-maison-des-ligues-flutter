@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: "My Awesome App",
+      title: "Maison des Ligues",
       getPages: appPages,
       initialRoute: Routes.loginPage,
     );

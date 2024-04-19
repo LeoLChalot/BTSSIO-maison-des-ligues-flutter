@@ -59,7 +59,7 @@ class Authentication {
           });
           _authService.setIsPremium(!(_authService.isPremium.value));
           await storage.write(key: "access_token", value: user.token);
-          await storage.write(key: "login", value: user.pseudo);
+          await storage.write(key: "pseudo", value: user.pseudo);
           return user;
         }
         return User.fromData({"pseudo": data["pseudo"], "isAdmin": false});
