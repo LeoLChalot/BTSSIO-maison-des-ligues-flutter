@@ -1,10 +1,10 @@
 import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/edition_article_page.dart';
 import 'package:maison_des_ligues_drawer/services/boutique_service.dart';
+import 'package:maison_des_ligues_drawer/widgets/article_liste_tile.dart';
 
 import '../../models/article_model.dart';
 
@@ -16,8 +16,6 @@ class StockPage extends StatefulWidget {
 }
 
 class _StockPageState extends State<StockPage> {
-  static final String _baseUrl = "${dotenv.env['BASE_URL']}";
-
   final String _categorieId = Get.arguments['categorie_id'];
   final bool tri = Get.arguments['categorie_id'] != "" ? true : false;
   final String _nom = Get.arguments['nom'];
@@ -53,32 +51,6 @@ class _StockPageState extends State<StockPage> {
     if (success) {
       _fetchArticles();
     }
-  }
-
-  Future<void> _dialogBuilder(BuildContext context, Article article) {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(textAlign: TextAlign.center, article.nom),
-          content: Text(
-              textAlign: TextAlign.justify,
-              style: const TextStyle(),
-              article.description),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: Theme.of(context).textTheme.labelLarge,
-              ),
-              child: const Text('Fermer'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -120,11 +92,6 @@ class _StockPageState extends State<StockPage> {
                         itemCount: snapshot.data?.length,
                         itemBuilder: (context, index) {
                           final article = snapshot.data?[index];
-                          final image = "$_baseUrl/${article.image}";
-                          double.parse(article.prix);
-                          final nom = article.nom;
-                          final id = article.id;
-                          final quantite = article.quantite;
                           return Slidable(
                             // Specify a key if the Slidable is dismissible.
                             key: ValueKey(article),
@@ -157,7 +124,7 @@ class _StockPageState extends State<StockPage> {
                                               color: Colors.black54),
                                           children: <TextSpan>[
                                             TextSpan(
-                                                text: '\n$nom\n',
+                                                text: '\n${article.nom}\n',
                                                 style: const TextStyle(
                                                     fontWeight:
                                                         FontWeight.bold)),
@@ -171,16 +138,17 @@ class _StockPageState extends State<StockPage> {
                                           ],
                                         ),
                                       ),
-                                      /*Text(
-                                          "Vous vous apprêtez à supprimer définitivement :\n$nom\nCette action est irréversible !"),*/
-                                      textOK: const Text('Confirmer',
+                                      textOK: const Text(
+                                          textAlign: TextAlign.right,
+                                          'Confirmer',
                                           style: TextStyle(
                                               color: Colors.red,
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold)),
-                                      textCancel: const Text('Annuler'),
+                                      textCancel: const Text(
+                                          textAlign: TextAlign.left, 'Annuler'),
                                     )) {
-                                      _deleteArticle(id);
+                                      _deleteArticle(article.id);
                                       debugPrint("SlidableAction");
                                       tri
                                           ? _fetchArticlesByCategorie(
@@ -193,17 +161,8 @@ class _StockPageState extends State<StockPage> {
                                   icon: Icons.delete,
                                   label: 'Delete',
                                 ),
-                                /* SlidableAction(
-                            onPressed: (context) =>
-                                debugPrint("SlidableAction"),
-                            backgroundColor: const Color(0xFF21B7CA),
-                            foregroundColor: Colors.white,
-                            icon: Icons.edit,
-                            label: 'Edit',
-                          ),*/
                               ],
                             ),
-                            // The end action pane is the one at the right or the bottom side.
                             endActionPane: ActionPane(
                               motion: const ScrollMotion(),
                               children: [
@@ -213,9 +172,7 @@ class _StockPageState extends State<StockPage> {
                                   onPressed: (context) => {
                                     Get.to(
                                       EditionArticlePage(article: article),
-                                      // This is how you give transitions.
                                       transition: Transition.native,
-                                      // This is how you can set the duration for navigating the screen.
                                       duration: const Duration(seconds: 1),
                                     )
                                   },
@@ -224,38 +181,12 @@ class _StockPageState extends State<StockPage> {
                                   icon: Icons.mode_edit_outline,
                                   label: 'Edit',
                                 ),
-                                /*SlidableAction(
-                            onPressed: (context) =>
-                                debugPrint("SlidableAction"),
-                            backgroundColor: const Color(0xFF0392CF),
-                            foregroundColor: Colors.white,
-                            icon: Icons.save,
-                            label: 'Save',
-                          ),*/
                               ],
                             ),
                             // The child of the Slidable is what the user sees when the
                             // component is not dragged.
                             child: Card(
-                              child: ListTile(
-                                onLongPress: () {
-                                  debugPrint("You long press me !");
-                                  _dialogBuilder(context, article);
-                                },
-                                leading: Image.network(image),
-                                title: Text(nom),
-                                subtitle: Text(
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: int.parse(quantite) >= 50
-                                            ? Colors.green
-                                            : int.parse(quantite) >= 10 &&
-                                                    int.parse(quantite) < 50
-                                                ? Colors.yellow[900]
-                                                : Colors.red[900]),
-                                    '$quantite en stock'),
-                                trailing: const Icon(Icons.touch_app),
-                              ),
+                              child: ArticleListTile(article: article),
                             ),
                           );
                         });

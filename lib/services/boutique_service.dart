@@ -25,7 +25,6 @@ class BoutiqueServices {
           await http.get(Uri.parse("$_baseUrl/boutique/articles/all"));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body)["infos"]["articles"] as List;
-        debugPrint(data.toString());
         return data
             .map<Article>((article) => Article.fromData(article))
             .toList();

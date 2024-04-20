@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:maison_des_ligues_drawer/models/article_model.dart';
 
@@ -417,6 +418,7 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
         onPressed: () {
           if (updateForm.currentState!.validate()) {
             onSubmit(context);
+            Get.back();
           }
         },
         child: const Icon(Icons.check_circle_outline),
