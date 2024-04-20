@@ -64,9 +64,19 @@ class _BoutiqueOverviewPageState extends State<BoutiqueOverviewPage> {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               ElevatedButton(
-                  onPressed: () {}, child: const Text("Tous les articles...")),
+                  onPressed: () {
+                    Get.to(
+                      () => const StockPage(),
+                      arguments: {"categorie_id": "", "nom": ""},
+                      // This is how you give transitions.
+                      transition: Transition.rightToLeftWithFade,
+                      // This is how you can set the duration for navigating the screen.
+                      duration: const Duration(milliseconds: 500),
+                    );
+                  },
+                  child: const Text("Tous les articles...")),
               const SizedBox(
-                height: 50,
+                height: 20,
               ),
               const Text(
                 textAlign: TextAlign.center,
