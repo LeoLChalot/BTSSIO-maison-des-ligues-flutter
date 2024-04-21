@@ -1,7 +1,10 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
+import 'package:maison_des_ligues_drawer/services/administration_services.dart';
 import 'package:maison_des_ligues_drawer/services/auth_services.dart';
+import 'package:maison_des_ligues_drawer/services/boutique_services.dart';
 
 import '../../utils/navigation.dart';
 
@@ -13,14 +16,30 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _authService = Get.find<AuthService>();
-  final String _userLogin = Get.arguments['userLogin'];
   final storage = const FlutterSecureStorage();
+  final String _userLogin = Get.arguments['userLogin'];
+  late Future<Map<String, dynamic>> _commandesStatistiques;
+  late Future<Map<String, dynamic>> _articlesStatistiques;
+
+  Future<Map<String, dynamic>> _fetchData() async {
+    setState(() {
+      _articlesStatistiques = BoutiqueServices.getArticlesStatistiques();
+      _commandesStatistiques =
+          AdministrationServices.getCommandesStatistiques();
+    });
+    debugPrint("Commandes : ${_commandesStatistiques.toString()}");
+    debugPrint("Articles : ${_articlesStatistiques.toString()}");
+    return {
+      '_articlesStatistiques': _articlesStatistiques,
+      '_commandesStatistiques': _commandesStatistiques,
+    };
+  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    _fetchData();
   }
 
   @override
@@ -147,111 +166,249 @@ class _HomePageState extends State<HomePage> {
               )
             ]),
       ),
-      body: Container(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Title and subtitle
-            const Text(
-              'Overview',
-              style: TextStyle(
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Title and subtitle
+          Column(
+            children: [
+              Column(
+                children: [
+                  const SizedBox(height: 10.0),
+                  Row(
+                    children: [
+                      Text(
+                        'Statistiques du site',
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
+            ],
+          ),
+          Expanded(
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              // Wrap the cards in a Row
+              children: [
+                SizedBox(
+                  width: 400,
+                  height: 500,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        _buildStatArticles(articlesData: _articlesStatistiques)
+                      ]),
+                ),
+                SizedBox(
+                    width: 400,
+                    height: 500,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        _buildStatCommandes(
+                            commandesData: _commandesStatistiques),
+                      ],
+                    )),
+              ],
             ),
-            const SizedBox(height: 10.0),
-            Text(
-              'Statistiques du site',
-              style: TextStyle(
-                fontSize: 16.0,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            Flexible(
-              child: ListView(scrollDirection: Axis.horizontal, children: [
-                _buildStatCard(
-                  title: 'Références d\'articles',
-                  value: '1234', // Replace with actual data
-                  icon: Icons.book,
-                ),
-                _buildStatCard(
-                  title: 'Nombre total d\'articles en stock',
-                  value: '5678', // Replace with actual data
-                  icon: Icons.inventory,
-                ),
-                _buildStatCard(
-                  title: 'Coût total des stocks',
-                  value: '\$12,345.67', // Replace with actual data
-                  icon: Icons.attach_money,
-                ),
-                _buildStatCard(
-                  title: 'Commandes de la semaine',
-                  subtitle: 'This Week vs. Last Week',
-                  value: '123 (+10%)', // Replace with actual data
-                  icon: Icons.shopping_cart,
-                ),
-              ]),
-            )
-          ],
-        ),
+          )
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _fetchData,
+        child: const Icon(Icons.refresh),
       ),
     );
   }
 }
 
-Widget _buildStatCard({
-  required String title,
-  required String value,
-  String? subtitle,
-  IconData? icon,
-}) {
-  return Card(
-    elevation: 4.0,
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                size: 24.0,
-                color: Colors.blue,
-              ),
-              const SizedBox(width: 10.0),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
+Widget _buildStatCommandes(
+    {required Future<Map<String, dynamic>> commandesData}) {
+  return FutureBuilder<Map<String, dynamic>>(
+    future: commandesData,
+    builder: (context, snapshot) {
+      if (snapshot.hasData) {
+        final data = snapshot.data!;
+        final int totalCommandes = data["totalCommandes"];
+        final int nombreCommandesSemaineActuelle =
+            data["nombreCommandesSemaineActuelle"];
+        final int pourcentageProgression = data["pourcentage"];
+
+        return Card(
+          elevation: 4.0,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.ssid_chart,
+                      size: 24.0,
+                      color: Colors.blue,
+                    ),
+                    SizedBox(width: 10.0),
+                    Text(
+                      "Activités du site",
+                      style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10.0),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 20.0,
-              fontWeight: FontWeight.w600,
+                const SizedBox(height: 10.0),
+                Text(
+                    "Nombre total de commandes : ${totalCommandes.toString()}"),
+                Text(
+                    "Nombre commandes de la semaine: ${nombreCommandesSemaineActuelle.toString()}"),
+                Text(pourcentageProgression > 0
+                    ? "+${nombreCommandesSemaineActuelle.toString()} % par rapport à la dernière semaine"
+                    : "${pourcentageProgression.toString()} % par rapport à la dernière semaine"),
+              ],
             ),
           ),
-          if (subtitle != null) const SizedBox(height: 10.0),
-          if (subtitle != null)
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 14.0,
-                color: Colors.grey[600],
-              ),
-            ),
-        ],
-      ),
-    ),
+        );
+      }
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      } else if (snapshot.hasError) {
+        return Text('Error: ${snapshot.error}');
+      } else {
+        return Text('Error: ${snapshot.error}');
+      }
+    },
   );
+}
+
+Widget _buildStatArticles(
+    {required Future<Map<String, dynamic>> articlesData}) {
+  return FutureBuilder<Map<String, dynamic>>(
+    future: articlesData,
+    builder: (context, snapshot) {
+      if (snapshot.hasData) {
+        final data = snapshot.data!;
+        final nombreArticles = data["nombreArticles"];
+        final quantiteTotal = data["quantiteTotal"];
+        final prixTotal = data["prixTotal"];
+        if (data.containsKey("repartition")) {
+          final repartition = data["repartition"] as Map;
+          return Card(
+            elevation: 4.0,
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.pie_chart,
+                        size: 24.0,
+                        color: Colors.blue,
+                      ),
+                      SizedBox(width: 10.0),
+                      Text(
+                        "Répartition des articles par catégorie",
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10.0),
+                  SizedBox(
+                    width: 400.0,
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: AspectRatio(
+                              aspectRatio: 1,
+                              child: PieChart(
+                                PieChartData(
+                                  borderData: FlBorderData(show: false),
+                                  sectionsSpace: 5,
+                                  centerSpaceRadius: 100,
+                                  sections: showingSections(
+                                      repartition), // Pass data to showingSections function
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Add Legend widget here
+                          const SizedBox(
+                              width: 20.0), // Adjust spacing as needed
+                        ],
+                      ),
+                    ),
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                          "Nombre de références : ${nombreArticles.toString()}"),
+                      Text(
+                          "Nombre total d'articles en stock : ${quantiteTotal.toString()}"),
+                      Text(
+                          "Valeur total des stocks : ${prixTotal.toString()} €"),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          );
+        }
+      } else {
+        return Text('Error: ${snapshot.error}');
+      }
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      } else if (snapshot.hasError) {
+        return Text('Error: ${snapshot.error}');
+      } else {
+        return Text('Error: ${snapshot.error}');
+      }
+    },
+  );
+}
+
+List<PieChartSectionData> showingSections(final dynamic repartitionCategories) {
+  final categories = repartitionCategories
+      as Map<String, dynamic>; // Assuming data is in _articlesStatistiques
+  double totalValue = 0.0; // Initialize total value to 0.0
+  for (final value in categories.values) {
+    totalValue += value["valeur"];
+  }
+  final sections = List.generate(categories.length, (i) {
+    final category = categories.keys.toList()[i];
+    final value = categories.values.toList()[i];
+    final percentage = ((value["valeur"]) / totalValue) * 100;
+    return PieChartSectionData(
+      color: value["couleur"],
+      value: value["valeur"].toDouble(),
+      title: '$category\n${percentage.toStringAsFixed(1)}%',
+      radius: 50.0,
+      titleStyle: const TextStyle(
+        fontSize: 12.0,
+        fontWeight: FontWeight.bold,
+        shadows: [Shadow(color: Colors.black, blurRadius: 2)],
+      ),
+    );
+  });
+  return sections;
 }

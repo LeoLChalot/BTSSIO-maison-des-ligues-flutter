@@ -170,6 +170,38 @@ class AdministrationServices {
     }
   }
 
+  /*
+  * Processes the data, and returns a list of items in the given [category_id]
+  * @returns - A list of Article objects.
+  */
+  static Future<Map<String, dynamic>> getCommandesStatistiques() async {
+    final token = await _getAccessToken();
+    final url = Uri.parse("$_baseUrl/admin/commandes/all");
+    try {
+      final response = await http.get(url, headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": "Bearer $token",
+      });
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body)["infos"]["statistiques"] as Map;
+        final statistiques = {
+          "totalCommandes": data["totalCommandes"],
+          "nombreCommandesSemainePrecedente":
+              data["nombreCommandesSemainePrecedente"],
+          "nombreCommandesSemaineActuelle":
+              data["nombreCommandesSemaineActuelle"],
+          "pourcentage": data["pourcentage"],
+        };
+        return statistiques;
+      } else {
+        return Future.error("Something went wrong");
+      }
+    } catch (error) {
+      return Future.error(error);
+    }
+  }
+
   //----------------------------------------------------//
   //                    USERS SECTION                   //
   //----------------------------------------------------//

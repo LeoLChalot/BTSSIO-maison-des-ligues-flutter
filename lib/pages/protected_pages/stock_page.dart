@@ -174,7 +174,8 @@ class _StockPageState extends State<StockPage> {
                                     Get.to(
                                       EditionArticlePage(article: article),
                                       transition: Transition.native,
-                                      duration: const Duration(seconds: 1),
+                                      duration:
+                                          const Duration(milliseconds: 500),
                                     )
                                   },
                                   backgroundColor: const Color(0xFF7BC043),
