@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/stock_page.dart';
 
 import '../../models/categorie_model.dart';
-import '../../services/boutique_service.dart';
+import '../../services/boutique_services.dart';
 import 'ajout_article_page.dart';
 import 'ajout_categorie_page.dart';
 
@@ -152,7 +152,10 @@ class _BoutiqueOverviewPageState extends State<BoutiqueOverviewPage> {
           ),
         ),
         floatingActionButton: SpeedDial(
-            icon: Icons.add_rounded,
+            // icon: Icons.add_rounded,
+            animatedIcon: AnimatedIcons.home_menu,
+            animationAngle: 90,
+            // animationDuration: const Duration(milliseconds: 700),
             backgroundColor: Colors.yellow[600],
             foregroundColor: Colors.red[600],
             children: [
@@ -181,7 +184,7 @@ class _BoutiqueOverviewPageState extends State<BoutiqueOverviewPage> {
                   );
                 },
               ),
-              SpeedDialChild(
+              /*    SpeedDialChild(
                 child:
                     Icon(Icons.account_circle_sharp, color: Colors.yellow[600]),
                 label: 'Utilisateur',
@@ -191,7 +194,7 @@ class _BoutiqueOverviewPageState extends State<BoutiqueOverviewPage> {
                       content:
                           Text('Vers le formulaire d\'ajout d\'utilisateur')));
                 },
-              ),
+              ),*/
             ]));
   }
 }

@@ -7,9 +7,10 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:keyboard_dismisser/keyboard_dismisser.dart';
+import 'package:maison_des_ligues_drawer/services/administration_services.dart';
 
 import '../../models/categorie_model.dart';
-import '../../services/boutique_service.dart';
+import '../../services/boutique_services.dart';
 
 class AjoutArticlePage extends StatefulWidget {
   const AjoutArticlePage({super.key});
@@ -21,7 +22,7 @@ class AjoutArticlePage extends StatefulWidget {
 class _AjoutArticlePageState extends State<AjoutArticlePage> {
   XFile? _image;
 
-  late Object _newArticle;
+  late Map<String, dynamic> _newArticle;
   late Future<List<Categorie>> _categories;
   late String selectedCategorieType;
 
@@ -165,7 +166,7 @@ class _AjoutArticlePageState extends State<AjoutArticlePage> {
       };
     });
 
-    if (await BoutiqueServices.createArticle(_image, _newArticle)) {
+    if (await AdministrationServices.createArticle(_image, _newArticle)) {
       setState(() {
         _nomController.text = "";
         _imageController.text = "";

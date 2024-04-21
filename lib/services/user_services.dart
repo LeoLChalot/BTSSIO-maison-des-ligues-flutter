@@ -11,38 +11,6 @@ class UserService {
   static final String _baseUrl = "${dotenv.env['BASE_URL']}/m2l";
 
   /*
-  * Administrator use only, using the token provided in Headers
-  *
-  * Processes the data, and returns a list of Users objects.
-  * @returns - A list of Users objects.
-  */
-  static Future<List<User>> getAllUsers() async {
-    try {
-      final url = "$_baseUrl/admin/users/all";
-      const storage = FlutterSecureStorage();
-      String? token = await storage.read(key: "access_token");
-      debugPrint("In getAllUsers() => $url\nToken : $token");
-      final headers = {"Authorization": "Bearer $token"};
-      debugPrint("After Headers");
-      final response = await http.get(Uri.parse(url), headers: headers);
-      debugPrint("After Response");
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        debugPrint("DATA GET USERS => ${data.toString()}");
-        final listeUtilisateurs = data["infos"]["users"];
-        debugPrint("LISTE UTILISATEURS => $listeUtilisateurs");
-        return listeUtilisateurs
-            .map<User>((user) => User.fromData(user))
-            .toList();
-      } else {
-        return Future.error("Something went wrong");
-      }
-    } catch (error) {
-      return Future.error(error);
-    }
-  }
-
-  /*
   * Processes the data, and returns an instance of User object.
   * @returns - A User object.
   */
@@ -64,22 +32,17 @@ class UserService {
   }
 
   /*
-  * Processes the data, and delete the user targeted by the given [ID]
+  * Processes the data - Delete the user targeted by the given [ID]
   * @return - A boolean
   */
   static Future<bool> deleteUser(String pseudo) async {
-    try {
-      final url = "$_baseUrl/user/delete/$pseudo";
-      debugPrint("In deleteArticle() => $url");
-
-      final response = await http.delete(Uri.parse(url));
-      return (response.statusCode == 200) ? true : false;
-    } catch (error) {
-      return Future.error(error);
-    }
+    final url = Uri.parse("$_baseUrl/user/delete/$pseudo");
+    debugPrint("In deleteArticle() => $url");
+    final response = await http.delete(url);
+    return response.statusCode == 200;
   }
 
-  static Future<bool> updateUser(user) async {
+  /*static Future<bool> updateUser(user) async {
     try {
       final headers = {"Content-Type": "application/json"};
 
@@ -113,6 +76,31 @@ class UserService {
       // Gérer les erreurs
       debugPrint('Erreur lors de la modification du produit: $error');
       return false;
+    }
+  }*/
+
+  /*
+  * Processes the data - Update the user targeted by the given [ID]
+  * @return - A boolean
+  */
+  static Future<bool> updateUser(Map<String, dynamic> user) async {
+    final url = Uri.parse("$_baseUrl/user/update/profil/${user['id']}");
+    final headers = {"Content-Type": "application/json"};
+    var updatedUser = {};
+    user.forEach((key, value) {
+      if (key != 'id') {
+        updatedUser[key] = value.toString();
+      }
+    });
+    final body = jsonEncode(updatedUser);
+    final response = await http.put(url, headers: headers, body: body);
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw UserUpdateException(
+        message: "Error updating user: ${response.reasonPhrase}",
+        statusCode: response.statusCode,
+      );
     }
   }
 

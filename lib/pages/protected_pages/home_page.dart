@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
-import 'package:maison_des_ligues_drawer/services/auth_service.dart';
+import 'package:maison_des_ligues_drawer/services/auth_services.dart';
 
 import '../../utils/navigation.dart';
 
@@ -133,9 +133,8 @@ class _HomePageState extends State<HomePage> {
                           elevation: 10,
                         ),
                         onPressed: () {
-                          _authService
-                              .setIsPremium(!_authService.isPremium.value);
                           Get.back();
+                          Authentication.logout();
                           Get.toNamed(Routes.loginPage);
                         },
                         child: const Text(

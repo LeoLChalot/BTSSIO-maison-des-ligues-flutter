@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/home_page.dart';
-import 'package:maison_des_ligues_drawer/services/auth_service.dart';
+import 'package:maison_des_ligues_drawer/services/auth_services.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -85,9 +85,6 @@ class _LoginPageState extends State<LoginPage> {
         // This is how you can set the duration for navigating the screen.
         duration: const Duration(seconds: 1),
       );
-
-/*      Get.toNamed(Routes.homePage,
-          arguments: {"userLogin": user.pseudo.toString()});*/
     } else {
       _showWarning();
     }
@@ -164,7 +161,7 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: onSubmit,
-                    child: const Text("Connexion"),
+                    child: const Text("CONNEXION"),
                   ),
                 ),
               ]),
@@ -173,35 +170,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
-/*
- return Scaffold(
-      body: Center(
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Text(
-                'Welcome to my awesome App!',
-              ),
-              const SizedBox(
-                height: 16.0,
-              ),
-              Obx(() {
-                return SwitchListTile(
-                  title:
-                      Text('isPremium value : ${_authService.isPremium.value}'),
-                  value: _authService.isPremium.value,
-                  onChanged: _authService.setIsPremium,
-                );
-              }),
-              ElevatedButton(
-                onPressed: () {
-                  Get.offAndToNamed(Routes.homePage);
-                },
-                child: const Text('GO TO HOME PAGE'),
-              ),
-            ]),
-      ),
-    );
- */

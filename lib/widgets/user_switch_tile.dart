@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../models/user_model.dart';
-import '../services/user_service.dart';
+import '../services/user_services.dart';
 
 class UserSwitchTile extends StatefulWidget {
   final User user;

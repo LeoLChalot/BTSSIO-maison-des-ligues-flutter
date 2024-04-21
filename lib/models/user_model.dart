@@ -36,6 +36,21 @@ class User {
 
 class UserLoginException implements Exception {
   final String message;
-
   UserLoginException({required this.message});
+}
+
+class UserUpdateException implements Exception {
+  final String message;
+  UserUpdateException({required this.message, required int statusCode});
+}
+
+class UpdateUserPrivilegeException implements Exception {
+  final String message;
+  UpdateUserPrivilegeException(
+      {required this.message, required int statusCode});
+}
+
+class GetAllUsersException implements Exception {
+  final String message;
+  GetAllUsersException({required this.message});
 }

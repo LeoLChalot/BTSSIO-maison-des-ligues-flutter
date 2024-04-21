@@ -3,8 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:keyboard_dismisser/keyboard_dismisser.dart';
+import 'package:maison_des_ligues_drawer/services/administration_services.dart';
 
-import '../../services/boutique_service.dart';
+import '../../services/boutique_services.dart';
 
 class AjoutCategoriePage extends StatefulWidget {
   const AjoutCategoriePage({super.key});
@@ -78,7 +79,7 @@ class _AjoutCategoriePageState extends State<AjoutCategoriePage> {
       nomControllerText = _nomController.text;
     });
     setState(() {
-      _result = BoutiqueServices.createCategorie(nomControllerText);
+      _result = AdministrationServices.createCategorie(nomControllerText);
       _nomController.text = "";
     });
     final data = await _result;

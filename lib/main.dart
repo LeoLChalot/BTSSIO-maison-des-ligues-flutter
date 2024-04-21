@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:maison_des_ligues_drawer/services/auth_service.dart';
+import 'package:maison_des_ligues_drawer/services/auth_services.dart';
 import 'package:maison_des_ligues_drawer/utils/navigation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 

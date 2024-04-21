@@ -1,7 +1,7 @@
 import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:maison_des_ligues_drawer/services/user_service.dart';
+import 'package:maison_des_ligues_drawer/services/administration_services.dart';
 import 'package:maison_des_ligues_drawer/widgets/user_popup.dart';
 import 'package:maison_des_ligues_drawer/widgets/user_switch_tile.dart';
 import '../../models/user_model.dart';
@@ -16,16 +16,14 @@ class AdminPage extends StatefulWidget {
 class _AdminPageState extends State<AdminPage> {
   late final Future<List<User>> _listeUtilisateurs;
   final List<bool> _adminStates = [];
-  bool light1 = true;
 
   Future<void> _fetchUsers() async {
     debugPrint("_fetchUsers()");
-    _listeUtilisateurs = UserService.getAllUsers();
+    _listeUtilisateurs = AdministrationServices.getAllUsers();
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _fetchUsers();
   }
@@ -50,10 +48,17 @@ class _AdminPageState extends State<AdminPage> {
         body: FutureBuilder<List>(
           future: _listeUtilisateurs,
           builder: (context, snapshot) {
-            // debugPrint("_LISTEUTILISATEURS => ${_listeUtilisateurs.toString()}");
-            // debugPrint("SNAPSHOT => ${snapshot.toString()}");
+            if (snapshot.hasError) {
+              // Handle error (e.g., display an error message)
+              debugPrint(snapshot.error.toString());
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+            debugPrint(snapshot.toString());
+            debugPrint(
+                "_LISTEUTILISATEURS => ${_listeUtilisateurs.toString()}");
             if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-              snapshot.data!.sort((user1, user2) {
+              final response = snapshot.data! as List<User>;
+              response.sort((user1, user2) {
                 if (user1.isAdmin == user2.isAdmin) {
                   return user1.nom.compareTo(
                       user2.nom); // Sort by name if isAdmin is the same
@@ -63,10 +68,11 @@ class _AdminPageState extends State<AdminPage> {
               });
               // debugPrint(snapshot.hasData.toString());
               return ListView.builder(
-                  itemCount: snapshot.data!.length,
+                  itemCount: response.length,
                   itemBuilder: (context, index) {
-                    // debugPrint(snapshot.data![index].toString());
-                    final user = snapshot.data![index];
+                    debugPrint(_listeUtilisateurs.toString());
+                    debugPrint("Response ${response[index].toString()}");
+                    final user = response[index];
                     _adminStates.add(user.isAdmin);
                     return Column(
                       children: [

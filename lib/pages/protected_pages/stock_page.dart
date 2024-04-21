@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/edition_article_page.dart';
-import 'package:maison_des_ligues_drawer/services/boutique_service.dart';
+import 'package:maison_des_ligues_drawer/services/administration_services.dart';
+import 'package:maison_des_ligues_drawer/services/boutique_services.dart';
 import 'package:maison_des_ligues_drawer/widgets/article_liste_tile.dart';
 
 import '../../models/article_model.dart';
@@ -33,7 +34,7 @@ class _StockPageState extends State<StockPage> {
       _isLoading = true; // Hide loading indicator after data is fetched
     });
     await Future.delayed(const Duration(seconds: 1));
-    _listeArticles = BoutiqueServices.getArticleByCategory(_categorieId);
+    _listeArticles = BoutiqueServices.getArticlesByCategory(_categorieId);
     setState(() {
       _isLoading = false; // Hide loading indicator after data is fetched
     });
@@ -41,7 +42,7 @@ class _StockPageState extends State<StockPage> {
   }
 
   void _deleteArticle(String id) async {
-    final success = await BoutiqueServices.deleteArticle(id);
+    final success = await AdministrationServices.deleteArticle(id);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content:
