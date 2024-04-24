@@ -1,11 +1,8 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:maison_des_ligues_drawer/services/administration_services.dart';
 import 'package:maison_des_ligues_drawer/widgets/slidable_user.dart';
-import 'package:maison_des_ligues_drawer/widgets/user_popup.dart';
-import 'package:maison_des_ligues_drawer/widgets/user_switch_tile.dart';
 
 import '../../models/user_model.dart';
 

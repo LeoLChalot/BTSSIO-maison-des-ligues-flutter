@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get/get.dart';
-import 'package:maison_des_ligues_drawer/pages/protected_pages/article_page.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/stock_page.dart';
+import 'package:maison_des_ligues_drawer/widgets/custom_speeddial.dart';
 
-import '../../models/article_model.dart';
 import '../../models/categorie_model.dart';
 import '../../services/boutique_services.dart';
-import 'ajout_categorie_page.dart';
 
 class BoutiqueOverviewPage extends StatefulWidget {
   const BoutiqueOverviewPage({super.key});
@@ -20,14 +17,6 @@ class BoutiqueOverviewPage extends StatefulWidget {
 class _BoutiqueOverviewPageState extends State<BoutiqueOverviewPage> {
   late Future<List<Categorie>> _listeCategories;
   final storage = const FlutterSecureStorage();
-  final Article _article = Article(
-      id: "",
-      nom: "",
-      image: "",
-      description: "",
-      prix: "",
-      quantite: "",
-      categorie: Categorie(id: "", nom: ""));
 
   Future<void> _fetchCategories() async {
     setState(() {
@@ -160,40 +149,6 @@ class _BoutiqueOverviewPageState extends State<BoutiqueOverviewPage> {
             ],
           ),
         ),
-        floatingActionButton: SpeedDial(
-            // icon: Icons.add_rounded,
-            animatedIcon: AnimatedIcons.home_menu,
-            animationAngle: 90,
-            // animationDuration: const Duration(milliseconds: 700),
-            backgroundColor: Colors.yellow[600],
-            foregroundColor: Colors.red[600],
-            children: [
-              SpeedDialChild(
-                child:
-                    Icon(Icons.add_business_sharp, color: Colors.yellow[600]),
-                label: 'Article',
-                backgroundColor: Colors.red[600],
-                onTap: () {
-                  Get.to(
-                    ArticlePage(article: _article),
-                    transition: Transition.native,
-                    // This is how you can set the duration for navigating the screen.
-                    duration: const Duration(seconds: 1),
-                  );
-                },
-              ),
-              SpeedDialChild(
-                child: Icon(Icons.category, color: Colors.yellow[600]),
-                label: 'Catégorie',
-                backgroundColor: Colors.red[600],
-                onTap: () {
-                  Get.to(
-                    const AjoutCategoriePage(), transition: Transition.native,
-                    // This is how you can set the duration for navigating the screen.
-                    duration: const Duration(seconds: 1),
-                  );
-                },
-              ),
-            ]));
+        floatingActionButton: const CustomSpeedDial());
   }
 }

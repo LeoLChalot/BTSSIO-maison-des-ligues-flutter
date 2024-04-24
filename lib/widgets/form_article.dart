@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:keyboard_dismisser/keyboard_dismisser.dart';
@@ -11,6 +10,7 @@ import '../services/boutique_services.dart';
 
 class FormArticle extends StatefulWidget {
   final Article article;
+
   const FormArticle({super.key, required this.article});
 
   @override
@@ -70,52 +70,6 @@ class _FormArticleState extends State<FormArticle> {
     });
   }
 
-  Future<void> showWarning() {
-    return showDialog<String>(
-      context: context,
-      builder: (BuildContext context) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(10),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: <Widget>[
-              Container(
-                width: double.infinity,
-                height: 200,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.red, width: 3),
-                    color: Colors.lightBlue),
-                padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
-                child: const Column(
-                  children: [
-                    Text("Erreur lors de l'ajout !",
-                        style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center),
-                    Text(
-                        "Nous avons rencontré un problème lors de l'ajout de l'article !",
-                        style: TextStyle(fontSize: 22),
-                        textAlign: TextAlign.center),
-                  ],
-                ),
-              ),
-              Positioned(
-                top: -100,
-                child: SvgPicture.asset(
-                    width: 150,
-                    height: 150,
-                    "assets/images/svg/warning-error-svgrepo-com.svg"),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   // Get from gallery / camera
   Future<void> _getFromGallery(context, choice) async {
     debugPrint("in getFromGallery()");
@@ -173,10 +127,10 @@ class _FormArticleState extends State<FormArticle> {
           _categorieController.text = "";
           _image = null;
         });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Il semble y avoir eu une erreur...')));
       }
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Article ajouté !')));
     } else {
       setState(() {
         _updatedArticle = {
@@ -188,7 +142,7 @@ class _FormArticleState extends State<FormArticle> {
           "categorie_id": categorie.id
         };
       });
-      if (await AdministrationServices.createArticle(_image, _updatedArticle)) {
+      if (await AdministrationServices.updateArticle(_image, _updatedArticle)) {
         setState(() {
           _nomController.text = "";
           _imageController.text = "";
@@ -198,13 +152,13 @@ class _FormArticleState extends State<FormArticle> {
           _categorieController.text = "";
           _image = null;
         });
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Article ajouté !')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Article mis à jour !')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Il semble y avoir eu une erreur...')));
       }
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Il semble y avoir eu une erreur...')));
   }
 
   @override
@@ -257,19 +211,6 @@ class _FormArticleState extends State<FormArticle> {
         ],
         child: Scaffold(
           resizeToAvoidBottomInset: true,
-          appBar: AppBar(
-            backgroundColor: Colors.yellow[600],
-            foregroundColor: Colors.red[900],
-            centerTitle: true,
-            shadowColor: Colors.black,
-            elevation: 5,
-            title: Text(
-                style: TextStyle(
-                  color: Colors.red[900],
-                  fontWeight: FontWeight.bold,
-                ),
-                "Formulaire d'ajout"),
-          ),
           body: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
