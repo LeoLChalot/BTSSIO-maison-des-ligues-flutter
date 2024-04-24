@@ -3,9 +3,8 @@ import 'package:maison_des_ligues_drawer/middlewares/protected_routes.dart';
 import 'package:maison_des_ligues_drawer/models/article_model.dart';
 import 'package:maison_des_ligues_drawer/pages/login_page.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/admin_page.dart';
-import 'package:maison_des_ligues_drawer/pages/protected_pages/ajout_article_page.dart';
+import 'package:maison_des_ligues_drawer/pages/protected_pages/article_page.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/boutique_overview_page.dart';
-import 'package:maison_des_ligues_drawer/pages/protected_pages/edition_article_page.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/home_page.dart';
 import 'package:maison_des_ligues_drawer/pages/protected_pages/stock_page.dart';
 
@@ -39,23 +38,12 @@ final appPages = [
       middlewares: [ProtectedRoutes()]),
   GetPage(
       name: Routes.articleFormPage,
-      page: () => AjoutFormPage(article: article as Article),
+      page: () => ArticlePage(article: article as Article),
       middlewares: [ProtectedRoutes()]),
-/*  GetPage(
-      name: Routes.AjoutFormPage,
-      page: () => const AjoutFormPage(),
-      middlewares: [ProtectedRoutes()]),
-*/
   GetPage(
       name: Routes.ajoutCategoriePage,
       page: () => const AjoutCategoriePage(),
       middlewares: [ProtectedRoutes()]),
-/*  GetPage(
-      name: Routes.ajoutAdminPage,
-      page: () => const AjoutArticlePage(),
-      middlewares: [ProtectedRoutes()]),
-
- */
   GetPage(
       name: Routes.boutiqueOverview,
       page: () => const BoutiqueOverviewPage(),

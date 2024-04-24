@@ -2,7 +2,6 @@ import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
-import 'package:maison_des_ligues_drawer/pages/protected_pages/edition_article_page.dart';
 import 'package:maison_des_ligues_drawer/services/administration_services.dart';
 import 'package:maison_des_ligues_drawer/services/boutique_services.dart';
 import 'package:maison_des_ligues_drawer/widgets/article_liste_tile.dart';
