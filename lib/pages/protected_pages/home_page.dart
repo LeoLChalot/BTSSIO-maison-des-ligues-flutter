@@ -170,61 +170,41 @@ class _HomePageState extends State<HomePage> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Title and subtitle
-          Column(
-            children: [
-              Column(
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () => _fetchData(),
+              strokeWidth: 3,
+              backgroundColor: Colors.yellow[600],
+              color: Colors.red[900],
+              child: ListView(
+                scrollDirection: Axis.vertical,
+                // Wrap the cards in a Row
                 children: [
-                  const SizedBox(height: 10.0),
-                  Row(
-                    children: [
-                      Text(
-                        'Statistiques du site',
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
+                  SizedBox(
+                    width: 400,
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          _buildStatArticles(
+                              articlesData: _articlesStatistiques)
+                        ]),
                   ),
+                  SizedBox(
+                      width: 400,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          _buildStatCommandes(
+                              commandesData: _commandesStatistiques),
+                        ],
+                      )),
                 ],
               ),
-            ],
-          ),
-          Expanded(
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              // Wrap the cards in a Row
-              children: [
-                SizedBox(
-                  width: 405,
-                  height: 500,
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        _buildStatArticles(articlesData: _articlesStatistiques)
-                      ]),
-                ),
-                SizedBox(
-                    width: 400,
-                    height: 500,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        _buildStatCommandes(
-                            commandesData: _commandesStatistiques),
-                      ],
-                    )),
-              ],
             ),
           )
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _fetchData,
-        child: const Icon(Icons.refresh),
       ),
     );
   }
