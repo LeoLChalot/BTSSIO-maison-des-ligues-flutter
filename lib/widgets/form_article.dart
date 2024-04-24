@@ -127,6 +127,8 @@ class _FormArticleState extends State<FormArticle> {
           _categorieController.text = "";
           _image = null;
         });
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Article ajouté')));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text('Il semble y avoir eu une erreur...')));
