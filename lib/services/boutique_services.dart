@@ -1,11 +1,10 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:maison_des_ligues_drawer/models/categorie_model.dart';
-
 import '../models/article_model.dart';
+import '../models/categorie_model.dart';
 
 class BoutiqueServices {
   static final String _baseUrl = "${dotenv.env['BASE_URL']}/m2l";
@@ -156,7 +155,7 @@ class BoutiqueServices {
       // Calculate average brightness (luminosity)
       final avgBrightness = (r + g + b) / 3;
 
-      int _adjustColorValue(int colorValue, double avgBrightness,
+      int adjustColorValue(int colorValue, double avgBrightness,
           {required bool isLighter}) {
         final adjustment = (avgBrightness - 127.5).abs() *
             0.3; // Adjust based on desired lightness preference
@@ -167,9 +166,9 @@ class BoutiqueServices {
       }
 
       // Adjust colors to prioritize lightness
-      final adjustedR = _adjustColorValue(r, avgBrightness, isLighter: true);
-      final adjustedG = _adjustColorValue(g, avgBrightness, isLighter: true);
-      final adjustedB = _adjustColorValue(b, avgBrightness, isLighter: true);
+      final adjustedR = adjustColorValue(r, avgBrightness, isLighter: true);
+      final adjustedG = adjustColorValue(g, avgBrightness, isLighter: true);
+      final adjustedB = adjustColorValue(b, avgBrightness, isLighter: true);
 
       // Create a Color object from the adjusted RGB values
       return Color(0xFF000000 | adjustedR << 16 | adjustedG << 8 | adjustedB);
@@ -181,7 +180,7 @@ class BoutiqueServices {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body)["infos"]["statistiques"] as Map;
         final categories = data["categories"] as Map<String, dynamic>;
-        final coloredCategories = Map<String, dynamic>();
+        final coloredCategories = <String, dynamic>{};
 
         for (final category in categories.keys) {
           final categoryValue = categories[category];

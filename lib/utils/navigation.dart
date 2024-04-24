@@ -17,7 +17,7 @@ abstract class Routes {
   static const stockPage = '/stockpage';
   static const adminPage = '/adminpage';
   static const editionArticlePage = '/editionarticlepage';
-  static const ajoutArticlePage = '/ajoutarticlepage';
+  static const articleFormPage = '/articleformpage';
   static const ajoutCategoriePage = '/ajoutcategoriepage';
   static const ajoutAdminPage = '/ajoutadminpage';
   static const boutiqueOverview = '/boutiqueoverview';
@@ -38,21 +38,24 @@ final appPages = [
       page: () => const AdminPage(),
       middlewares: [ProtectedRoutes()]),
   GetPage(
-      name: Routes.editionArticlePage,
-      page: () => EditionArticlePage(article: article as Article),
+      name: Routes.articleFormPage,
+      page: () => AjoutFormPage(article: article as Article),
       middlewares: [ProtectedRoutes()]),
-  GetPage(
-      name: Routes.ajoutArticlePage,
-      page: () => const AjoutArticlePage(),
+/*  GetPage(
+      name: Routes.AjoutFormPage,
+      page: () => const AjoutFormPage(),
       middlewares: [ProtectedRoutes()]),
+*/
   GetPage(
       name: Routes.ajoutCategoriePage,
       page: () => const AjoutCategoriePage(),
       middlewares: [ProtectedRoutes()]),
-  GetPage(
+/*  GetPage(
       name: Routes.ajoutAdminPage,
       page: () => const AjoutArticlePage(),
       middlewares: [ProtectedRoutes()]),
+
+ */
   GetPage(
       name: Routes.boutiqueOverview,
       page: () => const BoutiqueOverviewPage(),

@@ -7,17 +7,16 @@ import '../services/user_services.dart';
 
 class UserSwitchTile extends StatefulWidget {
   final User user;
-  final bool adminState;
 
-  const UserSwitchTile(
-      {super.key, required this.user, required this.adminState});
+  const UserSwitchTile({super.key, required this.user});
 
   @override
   State<UserSwitchTile> createState() => _UserSwitchTileState();
 }
 
 class _UserSwitchTileState extends State<UserSwitchTile> {
-  late bool _value;
+  late User _user;
+  late bool _adminState;
 
   Future<void> _togglePrivilege(String id) async {
     await UserService.togglePrivilege(id);
@@ -47,34 +46,39 @@ class _UserSwitchTileState extends State<UserSwitchTile> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _value = widget.adminState;
+    _user = widget.user;
+    _adminState = _user.isAdmin;
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool disabled = _user.pseudo == "leolchalot" ? true : false;
     return SwitchListTile(
       tileColor: Colors.white,
-      title: Text(widget.user.pseudo),
-      subtitle: Text("Depuis : ${formatDate(widget.user.registrationDate)}"),
-      value: _value,
-      secondary: (_value)
+      title: Text(_user.pseudo),
+      subtitle: Text("Depuis : ${formatDate(_user.registrationDate)}"),
+      value: _adminState,
+      secondary: (_adminState)
           ? const Icon(Icons.verified_user_outlined)
           : const Icon(Icons.account_circle),
       thumbIcon: thumbIcon,
       onChanged: (bool value) async {
-        if (await confirm(
-          context,
-          title: const Text('Confirmation !'),
-          content: Text(_value
-              ? "Confirmer la perte du status \"Admin\"?"
-              : "Confirmer l'accès au status \"Admin\"?"),
-          textOK: const Text('Oui'),
-          textCancel: const Text('Non'),
-        )) {
-          _togglePrivilege(widget.user.id);
-          setState(() {
-            _value = value; // Update state in setState
-          });
+        if (!disabled) {
+          if (await confirm(
+            context,
+            title: const Text('Confirmation !'),
+            content: Text(_adminState
+                ? "Confirmer la perte du status \"Admin\"?"
+                : "Confirmer l'accès au status \"Admin\"?"),
+            textOK: const Text('Oui'),
+            textCancel: const Text('Non'),
+          )) {
+            _togglePrivilege(_user.id);
+
+            setState(() {
+              _adminState = value; // Update state in setState
+            });
+          }
         }
       },
     );

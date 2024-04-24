@@ -46,12 +46,11 @@ class Authentication {
       final user = jsonDecode(response.body)["infos"]["utilisateur"];
       debugPrint(user.toString());
       final isAdmin = user["isAdmin"];
-      final token = user["jwt_token"];
+      final token = user["token"];
       if (isAdmin == true) {
         _authService.setIsPremium(!(_authService.isPremium.value));
       }
 
-      debugPrint(isAdmin.toString());
       await _saveUserInfo(pseudo: user["pseudo"], token: token);
       return User.fromData(user);
     } else if (response.statusCode == 404) {

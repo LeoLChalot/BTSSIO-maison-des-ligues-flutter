@@ -177,6 +177,7 @@ class AdministrationServices {
   static Future<Map<String, dynamic>> getCommandesStatistiques() async {
     final token = await _getAccessToken();
     final url = Uri.parse("$_baseUrl/admin/commandes/all");
+
     try {
       final response = await http.get(url, headers: {
         "Content-Type": "application/json; charset=utf-8",
@@ -191,8 +192,9 @@ class AdministrationServices {
               data["nombreCommandesSemainePrecedente"],
           "nombreCommandesSemaineActuelle":
               data["nombreCommandesSemaineActuelle"],
-          "pourcentage": data["pourcentage"],
+          "pourcentage": data["pourcentage"] ?? data["totalCommandes"] * 10000,
         };
+        debugPrint(statistiques.toString());
         return statistiques;
       } else {
         return Future.error("Something went wrong");
@@ -217,6 +219,10 @@ class AdministrationServices {
     try {
       final headers = {"Authorization": "Bearer $token"};
       final response = await http.get(url, headers: headers);
+
+      debugPrint(
+          "TOKEN => $token\nURL => $url\nRESPONSE => ${response.body.toString()}");
+
       if (response.statusCode == 200) {
         debugPrint(response.body.toString());
         final users = jsonDecode(response.body)["infos"]["users"];

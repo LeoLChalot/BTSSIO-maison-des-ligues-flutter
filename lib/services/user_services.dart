@@ -42,43 +42,6 @@ class UserService {
     return response.statusCode == 200;
   }
 
-  /*static Future<bool> updateUser(user) async {
-    try {
-      final headers = {"Content-Type": "application/json"};
-
-      final body = jsonEncode({
-        "prenom": user["prenom"],
-        "nom": user["nom"],
-        "pseudo": user["pseudo"],
-        "email": user["email"],
-        "mot_de_passe": user["mot_de_passe"]
-      });
-      debugPrint(user["id"]);
-      debugPrint(body.toString());
-
-      final url = "$_baseUrl/user/update/profil/${user["id"]}";
-      debugPrint(url);
-
-      final response =
-          await http.put(Uri.parse(url), headers: headers, body: body);
-      debugPrint(response.statusCode.toString());
-      if (response.statusCode == 200) {
-        // Gérer la réponse réussie
-        debugPrint('Utilisateur mis à jour avec succès.');
-        return true;
-      } else {
-        // Gérer les erreurs de requête
-        debugPrint(
-            'Erreur lors de la modification de l\'utilisateur: ${response.reasonPhrase}');
-        return false;
-      }
-    } catch (error) {
-      // Gérer les erreurs
-      debugPrint('Erreur lors de la modification du produit: $error');
-      return false;
-    }
-  }*/
-
   /*
   * Processes the data - Update the user targeted by the given [ID]
   * @return - A boolean

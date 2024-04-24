@@ -197,7 +197,7 @@ class _HomePageState extends State<HomePage> {
               // Wrap the cards in a Row
               children: [
                 SizedBox(
-                  width: 400,
+                  width: 405,
                   height: 500,
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -240,7 +240,8 @@ Widget _buildStatCommandes(
         final int totalCommandes = data["totalCommandes"];
         final int nombreCommandesSemaineActuelle =
             data["nombreCommandesSemaineActuelle"];
-        final int pourcentageProgression = data["pourcentage"];
+        final int pourcentageProgression =
+            data["pourcentage"] ?? (data["pourcentage"] * 100);
 
         return Card(
           elevation: 4.0,
@@ -248,7 +249,7 @@ Widget _buildStatCommandes(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Row(
                   children: [
@@ -273,8 +274,8 @@ Widget _buildStatCommandes(
                 Text(
                     "Nombre commandes de la semaine: ${nombreCommandesSemaineActuelle.toString()}"),
                 Text(pourcentageProgression > 0
-                    ? "+${nombreCommandesSemaineActuelle.toString()} % par rapport à la dernière semaine"
-                    : "${pourcentageProgression.toString()} % par rapport à la dernière semaine"),
+                    ? "+${(nombreCommandesSemaineActuelle * 100).toString()}% par rapport à la dernière semaine"
+                    : "${pourcentageProgression.toString()}% par rapport à la dernière semaine"),
               ],
             ),
           ),
@@ -303,10 +304,11 @@ Widget _buildStatArticles(
         final prixTotal = data["prixTotal"];
         if (data.containsKey("repartition")) {
           final repartition = data["repartition"] as Map;
+          final nombreCategories = repartition.length;
           return Card(
             elevation: 4.0,
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -359,7 +361,10 @@ Widget _buildStatArticles(
                     ),
                   ),
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(
+                          "Nombre de catégorie : ${nombreCategories.toString()}"),
                       Text(
                           "Nombre de références : ${nombreArticles.toString()}"),
                       Text(

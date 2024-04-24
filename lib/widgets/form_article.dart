@@ -1,32 +1,32 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:maison_des_ligues_drawer/models/article_model.dart';
-import 'package:maison_des_ligues_drawer/services/administration_services.dart';
+import 'package:keyboard_dismisser/keyboard_dismisser.dart';
 
-import '../../models/categorie_model.dart';
-import '../../services/boutique_services.dart';
+import '../models/article_model.dart';
+import '../models/categorie_model.dart';
+import '../services/administration_services.dart';
+import '../services/boutique_services.dart';
 
-class EditionArticlePage extends StatefulWidget {
-  const EditionArticlePage({required this.article, super.key});
-
+class FormArticle extends StatefulWidget {
   final Article article;
+  const FormArticle({super.key, required this.article});
 
   @override
-  State<EditionArticlePage> createState() => _EditionArticlePageState();
+  State<FormArticle> createState() => _FormArticleState();
 }
 
-class _EditionArticlePageState extends State<EditionArticlePage> {
+class _FormArticleState extends State<FormArticle> {
+  late Article _article;
   XFile? _image;
-  late final Article _article = widget.article;
+
+  late Map<String, dynamic> _newArticle;
   late Map<String, dynamic> _updatedArticle;
   late Future<List<Categorie>> _categories;
   late String selectedCategorieType;
 
-  final GlobalKey<FormState> updateForm = GlobalKey<FormState>();
+  final GlobalKey<FormState> _addForm = GlobalKey<FormState>();
   final _nomController = TextEditingController();
   final _imageController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -91,11 +91,12 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
                 padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
                 child: const Column(
                   children: [
-                    Text("Erreur lors de la modification !",
+                    Text("Erreur lors de l'ajout !",
                         style: TextStyle(
                             fontSize: 24, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center),
-                    Text("Une erreur est survenue !",
+                    Text(
+                        "Nous avons rencontré un problème lors de l'ajout de l'article !",
                         style: TextStyle(fontSize: 22),
                         textAlign: TextAlign.center),
                   ],
@@ -115,7 +116,7 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
     );
   }
 
-  /// Get from gallery
+  // Get from gallery / camera
   Future<void> _getFromGallery(context, choice) async {
     debugPrint("in getFromGallery()");
     try {
@@ -131,7 +132,7 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
         });
 
         debugPrint("_IMAGE => ${_image?.path}");
-        Navigator.of(context).pop();
+        Get.back();
       } else {
         debugPrint("pickedFile == null !");
       }
@@ -141,7 +142,6 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
   }
 
   Future<void> onSubmit(BuildContext context) async {
-    debugPrint("FT - onSubmit()");
     setState(() {
       nomControllerText = _nomController.text;
       descriptionControllerText = _descriptionController.text;
@@ -153,64 +153,77 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
     debugPrint("UPLOAD IMAGE => ${_image.toString()}");
     final categorie = await _getCategorie(categorieControllerText);
 
-    setState(() {
-      _updatedArticle = {
-        "id": _article.id,
-        "nom": nomControllerText,
-        "description": descriptionControllerText,
-        "prix": prixControllerText.toString(),
-        "quantite": quantiteControllerText.toString(),
-        "categorie_id": categorie.id
-      };
-    });
-
-    debugPrint(_updatedArticle.toString());
-
-    if (await AdministrationServices.updateArticle(_image, _updatedArticle)) {
+    if (_article.nom == "") {
       setState(() {
-        _nomController.text = "";
-        _imageController.text = "";
-        _descriptionController.text = "";
-        _prixController.text = "";
-        _quantiteController.text = "";
-        _categorieController.text = "";
-        _image = null;
+        _newArticle = {
+          "nom": nomControllerText,
+          "description": descriptionControllerText,
+          "prix": prixControllerText.toString(),
+          "quantite": quantiteControllerText.toString(),
+          "categorie_id": categorie.id
+        };
       });
+      if (await AdministrationServices.createArticle(_image, _newArticle)) {
+        setState(() {
+          _nomController.text = "";
+          _imageController.text = "";
+          _descriptionController.text = "";
+          _prixController.text = "";
+          _quantiteController.text = "";
+          _categorieController.text = "";
+          _image = null;
+        });
+      }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Article mis à jour !'),
-          action: SnackBarAction(
-            label: 'Impec !',
-            onPressed: () {},
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Article ajouté !')));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Oops, il y a eu une erreur... !'),
-        action: SnackBarAction(
-          label: 'Retenter...',
-          onPressed: () {},
-        ),
-      ));
+      setState(() {
+        _updatedArticle = {
+          "id": _article.id,
+          "nom": nomControllerText,
+          "description": descriptionControllerText,
+          "prix": prixControllerText.toString(),
+          "quantite": quantiteControllerText.toString(),
+          "categorie_id": categorie.id
+        };
+      });
+      if (await AdministrationServices.createArticle(_image, _updatedArticle)) {
+        setState(() {
+          _nomController.text = "";
+          _imageController.text = "";
+          _descriptionController.text = "";
+          _prixController.text = "";
+          _quantiteController.text = "";
+          _categorieController.text = "";
+          _image = null;
+        });
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Article ajouté !')));
+      }
     }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Il semble y avoir eu une erreur...')));
   }
 
   @override
   void initState() {
     super.initState();
-    debugPrint("InitState() _article (Edit article page)");
-    debugPrint(
-        "initState() => INFORMATION DE L'ARTICLE ==> ${_article.toString()}");
+    _article = widget.article;
     _fetchCategories();
-    _nomController.text = _article.nom;
-    _descriptionController.text = _article.description;
-    _prixController.text = _article.prix.toString();
-    _quantiteController.text = _article.quantite.toString();
-    selectedCategorieType = _article.categorie.id;
+    if (_article.nom == "") {
+      selectedCategorieType = "413875cb-cbc1-4971-8c72-e2e7e86219bf";
+    } else {
+      _nomController.text = _article.nom;
+      _descriptionController.text = _article.description;
+      _prixController.text = _article.prix.toString();
+      _quantiteController.text = _article.quantite.toString();
+      selectedCategorieType = _article.categorie.id;
+    }
   }
 
+// Fonction déclancheur
   Future<void> showPictureChoices(context) async {
     return showDialog<void>(
         context: context,
@@ -237,40 +250,43 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: Colors.yellow[600],
-        foregroundColor: Colors.red[900],
-        centerTitle: true,
-        shadowColor: Colors.black,
-        elevation: 5,
-        title: Text(
-            style: TextStyle(
-              color: Colors.red[900],
-              fontWeight: FontWeight.bold,
-            ),
-            "Modifications"),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const SizedBox(
-              height: 50,
-            ),
-            Form(
-              key: updateForm,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.only(left: 50, right: 50),
-                  child: Column(
+  Widget build(BuildContext context) => KeyboardDismisser(
+        gestures: const [
+          GestureType.onTap,
+          GestureType.onPanUpdateDownDirection,
+        ],
+        child: Scaffold(
+          resizeToAvoidBottomInset: true,
+          appBar: AppBar(
+            backgroundColor: Colors.yellow[600],
+            foregroundColor: Colors.red[900],
+            centerTitle: true,
+            shadowColor: Colors.black,
+            elevation: 5,
+            title: Text(
+                style: TextStyle(
+                  color: Colors.red[900],
+                  fontWeight: FontWeight.bold,
+                ),
+                "Formulaire d'ajout"),
+          ),
+          body: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(
+                  height: 50,
+                ),
+                Form(
+                  key: _addForm,
+                  child: Container(
+                    padding: const EdgeInsets.only(left: 50, right: 50),
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         // Text - Nom de l'article
                         Container(
-                          margin: const EdgeInsets.only(bottom: 12),
+                          margin: const EdgeInsets.only(bottom: 20),
                           child: TextFormField(
                             controller: _nomController,
                             decoration: const InputDecoration(
@@ -285,12 +301,13 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
                             },
                           ),
                         ),
+
                         // Text Area - Description de l'article
                         Container(
-                          margin: const EdgeInsets.only(bottom: 12),
+                          margin: const EdgeInsets.only(bottom: 20),
                           child: TextFormField(
                             controller: _descriptionController,
-                            maxLines: 3,
+                            maxLines: 4,
                             decoration: const InputDecoration(
                               label: Text("Description"),
                               border: OutlineInputBorder(),
@@ -306,7 +323,7 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
 
                         // Nombre (décimal) - Choix de la quantité
                         Container(
-                          margin: const EdgeInsets.only(bottom: 12),
+                          margin: const EdgeInsets.only(bottom: 20),
                           child: TextFormField(
                             controller: _prixController,
                             keyboardType: const TextInputType.numberWithOptions(
@@ -327,7 +344,7 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
 
                         // Nombre (entier) - Choix de la quantité
                         Container(
-                          margin: const EdgeInsets.only(bottom: 12),
+                          margin: const EdgeInsets.only(bottom: 30),
                           child: TextFormField(
                             controller: _quantiteController,
                             keyboardType: const TextInputType.numberWithOptions(
@@ -358,24 +375,23 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
 
                         // DropDown - Choix de la catégorie
                         Container(
-                          margin: const EdgeInsets.only(bottom: 20),
+                          margin: const EdgeInsets.only(bottom: 15),
                           child: FutureBuilder<List<Categorie>>(
                             future: _categories, // Access the Future
                             builder: (context, snapshot) {
                               if (snapshot.hasData) {
                                 final categories = snapshot.data!;
-
+                                final displayedCategories =
+                                    categories.take(10).toList();
                                 return DropdownButtonFormField<String?>(
-                                  items: categories
+                                  items: displayedCategories
                                       .map((categorie) => DropdownMenuItem(
                                             value: categorie.id,
                                             child: Text(categorie.nom),
                                           ))
                                       .toList(),
                                   decoration: const InputDecoration(
-                                      label: Text("Catégorie"),
                                       border: OutlineInputBorder()),
-                                  borderRadius: BorderRadius.circular(10),
                                   value: selectedCategorieType,
                                   onChanged: (value) async {
                                     selectedCategorieType = value!;
@@ -397,31 +413,33 @@ class _EditionArticlePageState extends State<EditionArticlePage> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             // FILE INPUT
+
                             ElevatedButton.icon(
                               onPressed: () async {
                                 showPictureChoices(context);
                               },
-                              label: const Text('Changer d\'image'),
-                              icon: const Icon(Icons.upload),
+                              label: (_image?.name != null)
+                                  ? Text("${_image?.name.substring(0, 5)}...")
+                                  : const Text("Upload"),
+                              icon: const Icon(Icons.photo_camera),
                             ),
                           ],
                         ),
-                      ]),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              if (_addForm.currentState!.validate()) {
+                onSubmit(context);
+              }
+            },
+            child: const Icon(Icons.add_sharp),
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (updateForm.currentState!.validate()) {
-            onSubmit(context);
-            Get.back();
-          }
-        },
-        child: const Icon(Icons.check_circle_outline),
-      ),
-    );
-  }
+      );
 }

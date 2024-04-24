@@ -8,6 +8,7 @@ import 'package:maison_des_ligues_drawer/services/boutique_services.dart';
 import 'package:maison_des_ligues_drawer/widgets/article_liste_tile.dart';
 
 import '../../models/article_model.dart';
+import 'article_page.dart';
 
 class StockPage extends StatefulWidget {
   const StockPage({super.key});
@@ -172,10 +173,10 @@ class _StockPageState extends State<StockPage> {
                                   flex: 1,
                                   onPressed: (context) => {
                                     Get.to(
-                                      EditionArticlePage(article: article),
+                                      ArticlePage(article: article),
                                       transition: Transition.native,
-                                      duration:
-                                          const Duration(milliseconds: 500),
+                                      // This is how you can set the duration for navigating the screen.
+                                      duration: const Duration(seconds: 1),
                                     )
                                   },
                                   backgroundColor: const Color(0xFF7BC043),

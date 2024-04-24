@@ -1,9 +1,12 @@
 import 'dart:core';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:maison_des_ligues_drawer/services/administration_services.dart';
+import 'package:maison_des_ligues_drawer/widgets/slidable_user.dart';
 import 'package:maison_des_ligues_drawer/widgets/user_popup.dart';
 import 'package:maison_des_ligues_drawer/widgets/user_switch_tile.dart';
+
 import '../../models/user_model.dart';
 
 class AdminPage extends StatefulWidget {
@@ -18,7 +21,6 @@ class _AdminPageState extends State<AdminPage> {
   final List<bool> _adminStates = [];
 
   Future<void> _fetchUsers() async {
-    debugPrint("_fetchUsers()");
     _listeUtilisateurs = AdministrationServices.getAllUsers();
   }
 
@@ -53,9 +55,7 @@ class _AdminPageState extends State<AdminPage> {
               debugPrint(snapshot.error.toString());
               return Center(child: Text('Error: ${snapshot.error}'));
             }
-            debugPrint(snapshot.toString());
-            debugPrint(
-                "_LISTEUTILISATEURS => ${_listeUtilisateurs.toString()}");
+            // Users ordered by role
             if (snapshot.hasData && snapshot.data!.isNotEmpty) {
               final response = snapshot.data! as List<User>;
               response.sort((user1, user2) {
@@ -70,48 +70,10 @@ class _AdminPageState extends State<AdminPage> {
               return ListView.builder(
                   itemCount: response.length,
                   itemBuilder: (context, index) {
-                    debugPrint(_listeUtilisateurs.toString());
-                    debugPrint("Response ${response[index].toString()}");
                     final user = response[index];
                     _adminStates.add(user.isAdmin);
                     return Column(
-                      children: [
-                        Slidable(
-                          key: ValueKey(user),
-                          startActionPane: ActionPane(
-                            // A motion is a widget used to control how the pane animates.
-                            motion: const ScrollMotion(),
-                            // A pane can dismiss the Slidable.
-                            // dismissible: DismissiblePane(onDismissed: () {}),
-                            // All actions are defined in the children parameter.
-                            children: [
-                              // A SlidableAction can have an icon and/or a label.
-                              SlidableAction(
-                                onPressed: (context) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => UserPopup(user: user),
-                                  );
-                                },
-                                backgroundColor: Colors.blueAccent,
-                                foregroundColor: Colors.white,
-                                icon: Icons.info_outline,
-                                label: 'Infos',
-                              ),
-                            ],
-                          ),
-                          child: Card(
-                            child: ColoredBox(
-                              color: Colors.green,
-                              child: Material(
-                                child: UserSwitchTile(
-                                    user: user,
-                                    adminState: _adminStates[index]),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      children: [SlidableUser(user: user)],
                     );
                   });
               // Use the data to build your widget
