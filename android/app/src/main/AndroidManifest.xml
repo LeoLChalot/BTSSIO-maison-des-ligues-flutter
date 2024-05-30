@@ -11,7 +11,7 @@
         android:label="maison_des_ligues_drawer"
         android:enableOnBackInvokedCallback="true"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_m2l.png">
+        android:icon="@mipmap/ic_m2l">
         <activity
             android:name=".MainActivity"
             android:exported="true"

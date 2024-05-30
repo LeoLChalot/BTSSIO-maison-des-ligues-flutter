@@ -35,7 +35,7 @@ class AdministrationServices {
   */
   static Future<Map<String, dynamic>> createCategorie(String nom) async {
     final token = await _getAccessToken();
-    final url = Uri.parse("$_baseUrl/admin/categorie/new");
+    final url = Uri.parse("$_baseUrl/admin/categorie");
     final headers = {
       "Content-Type": "application/json; charset=utf-8",
       "Authorization": "Bearer $token",
@@ -65,7 +65,7 @@ class AdministrationServices {
   static Future<bool> createArticle(
       XFile? image, Map<String, dynamic> article) async {
     final token = await _getAccessToken();
-    final url = Uri.parse("$_baseUrl/admin/article/new");
+    final url = Uri.parse("$_baseUrl/admin/article");
 
     final multipartRequest = http.MultipartRequest('POST', url);
 
@@ -90,6 +90,8 @@ class AdministrationServices {
     // Send the request
     final streamedResponse = await multipartRequest.send();
     final response = await http.Response.fromStream(streamedResponse);
+
+    debugPrint(response.toString());
 
     // Handle response
     if (response.statusCode == 200) {

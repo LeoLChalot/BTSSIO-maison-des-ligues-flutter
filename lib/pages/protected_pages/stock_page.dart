@@ -88,7 +88,6 @@ class _StockPageState extends State<StockPage> {
               )
             : FutureBuilder<List>(
                 future: _listeArticles,
-                // Your async function that returns Future<YourData>
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                     return RefreshIndicator(
